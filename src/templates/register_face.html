@@ -1,0 +1,356 @@
+html:
+{% extends "base.html" %}
+{% block title %}Face Registration | SecureExam AI{% endblock %}
+
+{% block head_styles %}
+<style>
+body { overflow: hidden !important; }
+
+.rf-root {
+    position: fixed; inset: 0;
+    display: flex; z-index: 2;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* ── LEFT ── */
+.rf-left {
+    flex: 1.1;
+    background: rgba(4,10,24,0.7);
+    border-right: 1px solid rgba(16,185,129,0.1);
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding: 60px 56px;
+    position: relative; z-index: 2;
+    animation: slideUp 0.6s ease both;
+}
+
+.rf-step-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: #10b981; margin-bottom: 28px;
+}
+.rf-step-badge::before { content:''; width: 28px; height: 1px; background: #10b981; }
+
+.rf-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(36px, 4.5vw, 58px);
+    font-weight: 900; line-height: 1.0;
+    letter-spacing: -2px; color: #f0f7ff;
+    margin-bottom: 20px;
+}
+.rf-title span {
+    font-style: italic;
+    background: linear-gradient(135deg, #10b981, #34d399);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.rf-desc {
+    font-size: 16px; color: rgba(148,179,220,0.6);
+    line-height: 1.8; max-width: 420px; margin-bottom: 40px;
+}
+
+/* Steps */
+.reg-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px; }
+.reg-step {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 20px;
+    background: rgba(8,20,50,0.55);
+    border: 1px solid rgba(16,185,129,0.1);
+    border-radius: 12px;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.reg-step:hover { border-color: rgba(16,185,129,0.25); transform: translateX(4px); }
+.reg-step-num {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #065f46, #10b981);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white;
+    box-shadow: 0 4px 10px rgba(16,185,129,0.3);
+}
+.rs-title { font-size: 14px; font-weight: 700; color: #c8d8eb; margin-bottom: 3px; }
+.rs-desc  { font-size: 12px; color: rgba(148,179,220,0.5); line-height: 1.5; }
+
+/* Important notice */
+.lock-notice {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.18);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: flex-start; gap: 12px;
+}
+.ln-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.ln-title { font-size: 13px; font-weight: 800; color: #10b981; margin-bottom: 4px; }
+.ln-desc  { font-size: 12px; color: rgba(148,179,220,0.5); line-height: 1.6; }
+
+/* ── RIGHT ── */
+.rf-right {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 52px;
+    position: relative; z-index: 2;
+    animation: slideUp 0.6s 0.15s ease both;
+}
+
+.cam-label-green {
+    font-size: 11px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(16,185,129,0.5);
+    margin-bottom: 20px; text-align: center;
+}
+
+/* Camera frame */
+.camera-frame-green {
+    width: 100%; max-width: 420px;
+    position: relative; border-radius: 20px;
+    overflow: hidden; background: #000;
+    border: 1px solid rgba(16,185,129,0.2);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.05), 0 24px 48px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+}
+.camera-frame-green video { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+
+/* Corner brackets green */
+.cam-corners-g { position: absolute; inset: 0; pointer-events: none; }
+.ccg { position: absolute; width: 22px; height: 22px; border-color: #10b981; border-style: solid; }
+.ccg.tl { top:12px;    left:12px;   border-width:2.5px 0 0 2.5px; border-radius:3px 0 0 0; }
+.ccg.tr { top:12px;    right:12px;  border-width:2.5px 2.5px 0 0; border-radius:0 3px 0 0; }
+.ccg.bl { bottom:12px; left:12px;   border-width:0 0 2.5px 2.5px; border-radius:0 0 0 3px; }
+.ccg.br { bottom:12px; right:12px;  border-width:0 2.5px 2.5px 0; border-radius:0 0 3px 0; }
+
+.live-pill-g {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(0,0,0,0.75); color: #10b981;
+    font-size: 10px; font-weight: 800; letter-spacing: 2px;
+    padding: 4px 10px; border-radius: 5px;
+}
+.pulse { animation: lpulse 2s infinite; }
+@keyframes lpulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Countdown */
+#rf-countdown-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.72);
+    display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+}
+#rf-countdown-num {
+    font-family: 'Fraunces', serif; font-size: 88px;
+    font-weight: 900; color: #10b981; line-height: 1;
+}
+
+/* Progress bar */
+.capture-progress {
+    width: 100%; max-width: 420px;
+    background: rgba(255,255,255,0.06); border-radius: 6px;
+    height: 6px; overflow: hidden; margin-bottom: 14px;
+}
+.cp-fill {
+    height: 100%; background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 6px; transition: width 0.4s ease;
+    width: 0%;
+}
+.cp-label {
+    font-size: 12px; font-weight: 600; color: rgba(148,179,220,0.5);
+    text-align: center; margin-bottom: 20px;
+}
+
+#rf-status {
+    font-size: 14px; font-weight: 600;
+    text-align: center; min-height: 20px; margin-bottom: 20px;
+    width: 100%; max-width: 420px;
+}
+
+.reg-btn {
+    width: 100%; max-width: 420px;
+    padding: 15px;
+    background: linear-gradient(135deg, #065f46, #10b981);
+    color: white; border: none; border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px; font-weight: 800; letter-spacing: 0.5px;
+    cursor: pointer; transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+}
+.reg-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(16,185,129,0.4); }
+.reg-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.rf-footnote {
+    font-size: 11px; color: rgba(148,179,220,0.25);
+    text-align: center; font-weight: 600;
+}
+
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:800px) { .rf-left{display:none;} .rf-right{padding:32px 24px;} }
+</style>
+{% endblock %}
+
+{% block show_footer %}{% endblock %}
+
+{% block content %}
+<canvas id="rf-canvas" style="display:none"></canvas>
+
+<div class="rf-root">
+
+    <!-- ── LEFT ── -->
+    <div class="rf-left">
+        <div class="rf-step-badge">Step 1 of 3</div>
+        <h1 class="rf-title">Register Your<br><span>Biometric</span></h1>
+        <p class="rf-desc">
+            Your face will be securely stored and used to verify your identity
+            throughout every exam session. This is a one-time setup.
+        </p>
+
+        <div class="reg-steps">
+            <div class="reg-step">
+                <div class="reg-step-num">1</div>
+                <div>
+                    <div class="rs-title">Position Your Face</div>
+                    <div class="rs-desc">Centre your face in the camera frame in a well-lit space.</div>
+                </div>
+            </div>
+            <div class="reg-step">
+                <div class="reg-step-num">2</div>
+                <div>
+                    <div class="rs-title">Click Register & Hold Still</div>
+                    <div class="rs-desc">A 3-second countdown will begin. Stay perfectly still.</div>
+                </div>
+            </div>
+            <div class="reg-step">
+                <div class="reg-step-num">3</div>
+                <div>
+                    <div class="rs-title">Confirmation</div>
+                    <div class="rs-desc">You'll receive a confirmation and be redirected to login.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lock-notice">
+            <span class="ln-icon">🔐</span>
+            <div>
+                <div class="ln-title">Biometric Locked After Registration</div>
+                <div class="ln-desc">Your face data cannot be changed after registration. This prevents impersonation. Contact your admin if you have a genuine concern.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── RIGHT ── -->
+    <div class="rf-right">
+        <div class="cam-label-green">Camera — Registration Mode</div>
+
+        <div class="camera-frame-green">
+            <video id="rf-video" autoplay playsinline></video>
+            <div class="cam-corners-g">
+                <span class="ccg tl"></span><span class="ccg tr"></span>
+                <span class="ccg bl"></span><span class="ccg br"></span>
+            </div>
+            <div id="rf-countdown-overlay">
+                <div id="rf-countdown-num">3</div>
+                <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(16,185,129,0.7);">Hold Still</div>
+            </div>
+            <div class="live-pill-g pulse">● LIVE</div>
+        </div>
+
+        <div class="capture-progress"><div class="cp-fill" id="cp-fill"></div></div>
+        <div class="cp-label" id="cp-label">Ready to capture biometric</div>
+
+        <p id="rf-status"></p>
+
+        <button onclick="startRegistration()" class="reg-btn" id="reg-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span id="reg-btn-label">Register Face Now</span>
+        </button>
+
+        <div class="rf-footnote">Your biometric is encrypted and stored securely on our servers</div>
+    </div>
+</div>
+
+<script>
+const rfVideo   = document.getElementById("rf-video");
+const rfOverlay = document.getElementById("rf-countdown-overlay");
+const rfCountEl = document.getElementById("rf-countdown-num");
+const rfCanvas  = document.getElementById("rf-canvas");
+const rfStatus  = document.getElementById("rf-status");
+const cpFill    = document.getElementById("cp-fill");
+const cpLabel   = document.getElementById("cp-label");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => { rfVideo.srcObject = stream; })
+    .catch(() => {
+        rfStatus.style.color = "#ef4444";
+        rfStatus.innerText   = "✗ Camera access denied. Please allow camera in browser settings.";
+    });
+
+function startRegistration() {
+    const btn   = document.getElementById("reg-btn");
+    const label = document.getElementById("reg-btn-label");
+    btn.disabled  = true;
+    label.innerText = "Capturing...";
+    rfOverlay.style.display = "flex";
+    let count = 3;
+    rfCountEl.innerText = count;
+    cpFill.style.width  = "0%";
+    cpLabel.innerText   = "Capturing in 3...";
+    const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+            rfCountEl.innerText   = count;
+            cpLabel.innerText     = `Capturing in ${count}...`;
+            cpFill.style.width    = `${(3 - count) / 3 * 70}%`;
+        } else {
+            clearInterval(timer);
+            cpFill.style.width = "85%";
+            cpLabel.innerText  = "Processing biometric...";
+            captureAndRegister();
+        }
+    }, 1000);
+}
+
+function captureAndRegister() {
+    const btn   = document.getElementById("reg-btn");
+    const label = document.getElementById("reg-btn-label");
+    rfCanvas.width  = 640;
+    rfCanvas.height = 480;
+    rfCanvas.getContext("2d").drawImage(rfVideo, 0, 0, 640, 480);
+    const imageData = rfCanvas.toDataURL("image/jpeg", 0.85);
+
+    // FIXED: Pointing to 'face.save_face' instead of 'face.register_face'
+    fetch("{{ url_for('face.save_face') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData })
+    })
+    .then(r => r.json())
+    .then(data => {
+        rfOverlay.style.display = "none";
+        
+        // FIXED: Checking 'data.success' to match your Python response
+        if (data.success) {
+            cpFill.style.width  = "100%";
+            cpLabel.innerText   = "✓ Biometric registered!";
+            rfStatus.style.color = "#22c55e";
+            rfStatus.innerHTML   = "✓ Face registered successfully — redirecting...";
+            // Redirect to login after success
+            setTimeout(() => { window.location = "/login"; }, 1400);
+        } else {
+            cpFill.style.width  = "0%";
+            cpLabel.innerText   = "Registration failed — try again";
+            rfStatus.style.color = "#ef4444";
+            // FIXED: Using 'data.error' to match your Python response
+            rfStatus.innerText   = "✗ " + (data.error || "Could not detect face.");
+            btn.disabled  = false;
+            label.innerText = "Try Again";
+        }
+    })
+    .catch((err) => {
+        console.error("Capture Error:", err);
+        rfOverlay.style.display = "none";
+        rfStatus.style.color    = "#ef4444";
+        rfStatus.innerText      = "✗ Server connection failed. Check terminal.";
+        btn.disabled   = false;
+        document.getElementById("reg-btn-label").innerText = "Try Again";
+    });
+}
+</script>
+{% endblock %}

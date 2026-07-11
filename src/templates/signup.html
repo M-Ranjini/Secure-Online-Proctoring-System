@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+{% block title %}Sign Up | {{ branding.project_name }}{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,800;0,900;1,700;1,900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+body { padding-top: 0 !important; overflow: hidden; }
+.global-nav { display: none !important; }
+body::before { display: none !important; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.login-root {
+    position: fixed; inset: 0;
+    display: flex;
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
+    background: #040d1a;
+}
+
+/* ── AURORA BACKGROUND ── */
+.aurora-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+
+.aurora-bg::before {
+    content: '';
+    position: absolute;
+    width: 900px; height: 900px;
+    top: -200px; left: -100px;
+    background: radial-gradient(ellipse, rgba(29,78,216,0.35) 0%, transparent 65%);
+    animation: drift1 12s ease-in-out infinite alternate;
+    border-radius: 50%;
+}
+
+.aurora-bg::after {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    bottom: -150px; left: 30%;
+    background: radial-gradient(ellipse, rgba(14,165,233,0.2) 0%, transparent 65%);
+    animation: drift2 15s ease-in-out infinite alternate;
+    border-radius: 50%;
+}
+
+.aurora-orb {
+    position: absolute;
+    width: 500px; height: 500px;
+    top: 10%; right: 5%;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 65%);
+    animation: drift3 10s ease-in-out infinite alternate;
+    border-radius: 50%;
+}
+
+@keyframes drift1 { from{transform:translate(0,0) scale(1)} to{transform:translate(60px,40px) scale(1.08)} }
+@keyframes drift2 { from{transform:translate(0,0) scale(1)} to{transform:translate(-40px,-60px) scale(1.12)} }
+@keyframes drift3 { from{transform:translate(0,0) scale(1)} to{transform:translate(30px,-40px) scale(0.9)} }
+
+.grid-overlay {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* ═══════════════════════════════════════
+   LEFT PANEL
+═══════════════════════════════════════ */
+.left-panel {
+    flex: 1;
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 36px 48px;
+}
+
+.left-panel > * { animation: slideUp 0.7s ease both; }
+
+@keyframes slideUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+.brand-row {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 32px; animation-delay: 0s;
+}
+
+.brand-shield {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    box-shadow: 0 6px 18px rgba(37,99,235,0.4);
+}
+
+.brand-info { display: flex; flex-direction: column; gap: 1px; }
+
+.brand-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px; font-weight: 800;
+    color: #ffffff; letter-spacing: 0.2px;
+}
+
+.brand-tagline {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(99,179,237,0.7);
+}
+
+.hero-block { margin-bottom: 28px; animation-delay: 0.08s; }
+
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: rgba(37,99,235,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 100px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: #93c5fd; margin-bottom: 16px;
+}
+
+.badge-pulse {
+    width: 6px; height: 6px;
+    background: #22d3ee; border-radius: 50%;
+    box-shadow: 0 0 8px #22d3ee;
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.8); }
+}
+
+.hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 2.8vw, 42px);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: -2px; color: #f0f7ff;
+    margin-bottom: 14px;
+}
+
+.hero-title .highlight {
+    font-style: italic;
+    background: linear-gradient(135deg, #60a5fa, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-desc {
+    font-size: 13px; font-weight: 400;
+    color: rgba(148,179,220,0.65);
+    line-height: 1.8; max-width: 420px;
+}
+
+/* Onboarding steps */
+.steps-list {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 28px; animation-delay: 0.16s;
+}
+
+.step-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    transition: all 0.25s;
+}
+
+.step-item:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(59,130,246,0.3);
+    transform: translateX(4px);
+}
+
+.step-num {
+    width: 26px; height: 26px; flex-shrink: 0;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: white;
+    box-shadow: 0 4px 10px rgba(37,99,235,0.35);
+}
+
+.step-title {
+    display: block;
+    font-size: 12px; font-weight: 700; color: #c7dff5;
+    margin-bottom: 2px;
+}
+
+.step-desc {
+    font-size: 11px; font-weight: 400;
+    color: rgba(148,179,220,0.5); line-height: 1.5;
+}
+
+/* Stats strip */
+.stats-strip {
+    display: flex; gap: 0;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; overflow: hidden;
+    animation-delay: 0.24s;
+}
+
+.stat-cell {
+    flex: 1; padding: 12px 16px;
+    display: flex; flex-direction: column; gap: 3px;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    transition: background 0.2s;
+}
+
+.stat-cell:last-child { border-right: none; }
+.stat-cell:hover { background: rgba(255,255,255,0.04); }
+
+.stat-val {
+    font-family: 'Fraunces', serif;
+    font-size: 18px; font-weight: 800;
+    color: #f0f7ff; line-height: 1;
+}
+
+.stat-val sup { font-size: 11px; color: #60a5fa; font-family: 'Outfit', sans-serif; }
+
+.stat-key {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(148,179,220,0.35);
+}
+
+/* ═══════════════════════════════════════
+   RIGHT PANEL
+═══════════════════════════════════════ */
+.right-panel {
+    flex: 1;
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px 48px;
+}
+
+.form-glass {
+    width: 100%; max-width: 380px;
+    background: rgba(8,20,50,0.6);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px; padding: 30px;
+    position: relative; overflow: hidden;
+    animation: slideUp 0.7s 0.1s ease both;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.form-glass::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(96,165,250,0.7), transparent);
+}
+
+.card-heading { margin-bottom: 22px; }
+
+.card-kicker {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: #60a5fa; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.kicker-line { width: 20px; height: 1px; background: #60a5fa; }
+
+.card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; font-weight: 900;
+    color: #f0f7ff; line-height: 1.2;
+    letter-spacing: -0.5px; margin-bottom: 6px;
+}
+
+.card-sub {
+    font-size: 13px; font-weight: 400;
+    color: rgba(148,179,220,0.55); line-height: 1.6;
+}
+
+.field { margin-bottom: 13px; }
+
+.field-label {
+    display: block;
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(148,179,220,0.6); margin-bottom: 8px;
+}
+
+.input-wrap { position: relative; }
+
+.field-input {
+    width: 100%;
+    padding: 10px 44px 10px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #f0f7ff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px; font-weight: 500;
+    outline: none; transition: all 0.2s;
+    caret-color: #60a5fa;
+}
+
+.field-input.no-icon { padding-right: 14px; }
+.field-input::placeholder { color: rgba(148,179,220,0.25); font-weight: 400; }
+
+.field-input:focus {
+    border-color: rgba(96,165,250,0.6);
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+
+.pwd-toggle {
+    position: absolute; right: 13px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    color: rgba(148,179,220,0.4);
+    cursor: pointer; padding: 3px; transition: color 0.2s;
+    display: flex; align-items: center;
+}
+.pwd-toggle:hover { color: #60a5fa; }
+
+.submit-btn {
+    width: 100%; padding: 11px; margin-top: 4px;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+    color: white; border: none; border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
+    cursor: pointer; transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 14px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.4);
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0; transition: opacity 0.25s;
+}
+
+.submit-btn:hover::before { opacity: 1; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(37,99,235,0.5); }
+.submit-btn:active { transform: translateY(0); }
+
+.btn-arrow { display:flex; align-items:center; transition: transform 0.2s; }
+.submit-btn:hover .btn-arrow { transform: translateX(5px); }
+
+.card-footer {
+    text-align: center;
+    font-size: 12px; font-weight: 600;
+    color: rgba(148,179,220,0.4); margin-bottom: 14px;
+}
+
+.card-footer a {
+    color: #60a5fa; text-decoration: none;
+    font-weight: 700; transition: color 0.2s;
+}
+.card-footer a:hover { color: #93c5fd; }
+
+.secure-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: rgba(34,197,94,0.06);
+    border: 1px solid rgba(34,197,94,0.15);
+    border-radius: 8px;
+    font-size: 11px; font-weight: 600;
+    color: rgba(134,239,172,0.6);
+}
+
+.secure-dot {
+    width: 7px; height: 7px;
+    background: #22c55e; border-radius: 50%;
+    box-shadow: 0 0 6px rgba(34,197,94,0.6);
+    animation: pulse-glow 2s infinite; flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+    .left-panel { display: none; }
+    .right-panel { width: 100%; background: #040d1a; }
+}
+</style>
+
+<div class="login-root">
+    <div class="aurora-bg"></div>
+    <div class="aurora-orb"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- ══ LEFT ══ -->
+    <div class="left-panel">
+
+        <div class="brand-row">
+            <div class="brand-shield">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <div class="brand-info">
+                <span class="brand-name">SecureExam AI</span>
+                <span class="brand-tagline">Examination Portal</span>
+            </div>
+        </div>
+
+        <div class="hero-block">
+            <div class="hero-badge">
+                <span class="badge-pulse"></span>
+                New Student Registration
+            </div>
+            <h1 class="hero-title">
+                Your <span class="highlight">Secure</span><br>
+                Exam Journey<br>
+                Starts Here.
+            </h1>
+            <p class="hero-desc">
+                Create your account in seconds. Once registered, complete a one-time face biometric scan before accessing any proctored assessment.
+            </p>
+        </div>
+
+        <div class="steps-list">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div>
+                    <span class="step-title">Create Your Account</span>
+                    <span class="step-desc">Register with your institutional email and a secure password.</span>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div>
+                    <span class="step-title">Enroll Your Face</span>
+                    <span class="step-desc">Complete a one-time biometric scan for identity verification.</span>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div>
+                    <span class="step-title">Access Exam Portal</span>
+                    <span class="step-desc">Sign in and launch any proctored exam assigned to you.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-strip">
+            <div class="stat-cell">
+                <div class="stat-val">99<sup>%</sup></div>
+                <div class="stat-key">Accuracy</div>
+            </div>
+            <div class="stat-cell">
+                <div class="stat-val">0.3<sup>s</sup></div>
+                <div class="stat-key">Response</div>
+            </div>
+            <div class="stat-cell">
+                <div class="stat-val">7<sup>+</sup></div>
+                <div class="stat-key">AI Models</div>
+            </div>
+            <div class="stat-cell">
+                <div class="stat-val">24<sup>/7</sup></div>
+                <div class="stat-key">Uptime</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══ RIGHT ══ -->
+    <div class="right-panel">
+        <div class="form-glass">
+
+            <div class="card-heading">
+                <div class="card-kicker">
+                    <span class="kicker-line"></span>
+                    Create Account
+                </div>
+                <h2 class="card-title">Register as a<br>New Student</h2>
+                <p class="card-sub">Fill in your details to get started with the platform.</p>
+            </div>
+
+            <form method="POST" action="/signup">
+
+                <div class="field">
+                    <label class="field-label" for="name-in">Full Name</label>
+                    <input id="name-in" type="text" name="full_name"
+                        class="field-input no-icon"
+                        placeholder="Enter your full name"
+                        required autocomplete="name">
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="email-in">Email Address</label>
+                    <input id="email-in" type="email" name="email"
+                        class="field-input no-icon"
+                        placeholder="student@university.edu"
+                        required autocomplete="email">
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="pwd-in">Password</label>
+                    <div class="input-wrap">
+                        <input id="pwd-in" type="password" name="password"
+                            class="field-input"
+                            placeholder="Min. 8 characters"
+                            required minlength="8"
+                            autocomplete="new-password">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd()" tabindex="-1">
+                            <svg id="eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg id="eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>Create My Account</span>
+                    <span class="btn-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </button>
+
+            </form>
+
+            <div class="card-footer">
+                Already have an account? <a href="/login">Sign in →</a>
+            </div>
+
+            <div class="secure-row">
+                <div class="secure-dot"></div>
+                <span>256-bit SSL · Data encrypted · GDPR compliant</span>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+function togglePwd() {
+    const inp = document.getElementById("pwd-in")
+    const s   = document.getElementById("eye-show")
+    const h   = document.getElementById("eye-hide")
+    if (inp.type === "password") {
+        inp.type = "text";     s.style.display = "none";  h.style.display = "block"
+    } else {
+        inp.type = "password"; s.style.display = "block"; h.style.display = "none"
+    }
+}
+</script>
+
+{% endblock %}

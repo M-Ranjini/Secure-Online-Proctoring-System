@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}Admin OTP Verification | SecureExam AI{% endblock %}
+
+{% block content %}
+<style>
+body { padding-top:0!important; overflow:hidden; }
+.global-nav { display:none!important; }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+.otp-root {
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Outfit',sans-serif; background:#040d1a; overflow:hidden;
+}
+
+/* Aurora background */
+.aurora-bg { position:absolute; inset:0; z-index:0; overflow:hidden; }
+.aurora-bg::before {
+    content:''; position:absolute; width:900px; height:900px; top:-200px; left:-100px;
+    background:radial-gradient(ellipse,rgba(124,58,237,0.28) 0%,transparent 65%);
+    animation:drift1 12s ease-in-out infinite alternate; border-radius:50%;
+}
+.aurora-bg::after {
+    content:''; position:absolute; width:700px; height:700px; bottom:-150px; right:5%;
+    background:radial-gradient(ellipse,rgba(168,85,247,0.15) 0%,transparent 65%);
+    animation:drift2 15s ease-in-out infinite alternate; border-radius:50%;
+}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1)}to{transform:translate(-40px,-60px) scale(1.12)}}
+
+.grid-overlay {
+    position:absolute; inset:0; z-index:0;
+    background-image:
+        linear-gradient(rgba(168,85,247,0.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(168,85,247,0.04) 1px,transparent 1px);
+    background-size:52px 52px;
+    mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+}
+
+/* Card */
+.otp-card {
+    position:relative; z-index:2;
+    background:rgba(8,20,50,0.78); backdrop-filter:blur(32px); -webkit-backdrop-filter:blur(32px);
+    border:1px solid rgba(255,255,255,0.10); border-radius:24px;
+    padding:48px 44px; width:100%; max-width:460px;
+    animation:fadeUp 0.55s ease both;
+}
+.otp-card::before {
+    content:''; position:absolute; top:0; left:15%; right:15%; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(168,85,247,0.65),transparent);
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* Shield icon */
+.shield-wrap {
+    width:70px; height:70px;
+    background:linear-gradient(135deg,rgba(124,58,237,0.25),rgba(168,85,247,0.15));
+    border:1px solid rgba(168,85,247,0.35); border-radius:20px;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 26px; animation:pulse-shield 3s ease-in-out infinite;
+}
+@keyframes pulse-shield{0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,0)}50%{box-shadow:0 0 0 12px rgba(168,85,247,0.07)}}
+
+/* Text */
+.otp-eyebrow {
+    font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+    color:#a855f7; text-align:center; margin-bottom:10px;
+}
+.otp-title {
+    font-family:'Fraunces',serif; font-size:clamp(22px,4vw,30px); font-weight:900;
+    line-height:1.1; color:#f0f7ff; text-align:center; margin-bottom:10px; letter-spacing:-0.5px;
+}
+.otp-sub {
+    font-size:14px; color:rgba(148,179,220,0.55); text-align:center; line-height:1.7; margin-bottom:24px;
+}
+.otp-sub strong { color:#c4b5fd; font-weight:700; }
+
+/* Dev mode banner */
+.dev-banner {
+    background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25);
+    border-radius:10px; padding:12px 16px; margin-bottom:18px;
+    font-size:13px; color:#fcd34d; line-height:1.6;
+}
+.dev-banner strong { color:#f59e0b; }
+.dev-banner code { background:rgba(245,158,11,0.15); padding:1px 6px; border-radius:4px; font-size:12px; }
+
+/* Countdown */
+.countdown-bar {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);
+    border-radius:10px; padding:11px 16px;
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;
+}
+.cd-label { font-size:12px; color:rgba(148,179,220,0.4); font-weight:600; }
+.cd-timer { font-size:20px; font-weight:900; font-family:'Outfit',monospace; color:#a855f7; min-width:48px; text-align:right; }
+.cd-timer.urgent { color:#ef4444; animation:blink 0.8s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* OTP digit inputs */
+.otp-inputs { display:flex; gap:9px; justify-content:center; margin-bottom:22px; }
+.otp-digit {
+    width:50px; height:62px;
+    background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.12);
+    border-radius:12px; font-family:'Outfit',monospace; font-size:27px; font-weight:900;
+    color:#f0f7ff; text-align:center; outline:none; transition:all 0.2s; caret-color:#a855f7;
+    -webkit-appearance:none; appearance:none;
+}
+.otp-digit:focus {
+    border-color:rgba(168,85,247,0.75); background:rgba(168,85,247,0.07);
+    box-shadow:0 0 0 3px rgba(168,85,247,0.13);
+}
+.otp-digit.filled { border-color:rgba(168,85,247,0.5); background:rgba(168,85,247,0.08); }
+#otp-hidden { display:none; }
+
+/* Submit button */
+.submit-btn {
+    width:100%; padding:15px;
+    background:linear-gradient(135deg,#7c3aed,#a855f7); color:white; border:none; border-radius:12px;
+    font-family:'Outfit',sans-serif; font-size:15px; font-weight:800; letter-spacing:0.5px;
+    cursor:pointer; transition:all 0.25s;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-bottom:18px; box-shadow:0 8px 28px rgba(124,58,237,0.38);
+}
+.submit-btn:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 14px 36px rgba(124,58,237,0.5); }
+.submit-btn:disabled{ opacity:0.4; cursor:not-allowed; transform:none; }
+
+/* Bottom actions */
+.otp-actions { display:flex; align-items:center; justify-content:space-between; font-size:13px; margin-bottom:16px; }
+.action-btn {
+    color:rgba(148,179,220,0.5); font-weight:600; transition:color 0.2s;
+    background:none; border:none; padding:0; font-family:inherit; font-size:13px; cursor:pointer;
+}
+.action-btn:hover { color:#a855f7; }
+.action-btn:disabled { opacity:0.35; cursor:default; }
+.back-link { color:rgba(148,179,220,0.4); text-decoration:none; font-weight:600; transition:color 0.2s; }
+.back-link:hover { color:#60a5fa; }
+
+/* Flash messages */
+.flash-msg { padding:11px 14px; border-radius:9px; margin-bottom:14px; font-size:13px; font-weight:600; }
+.flash-error   { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); color:#fca5a5; }
+.flash-info    { background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); color:#93c5fd; }
+.flash-warning { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); color:#fcd34d; }
+.flash-success { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); color:#6ee7b7; }
+
+/* Security note */
+.secure-note {
+    display:flex; align-items:center; gap:8px; padding:9px 14px;
+    background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.12);
+    border-radius:8px; font-size:11px; font-weight:600; color:rgba(134,239,172,0.45);
+}
+.sec-dot {
+    width:6px; height:6px; background:#22c55e; border-radius:50%;
+    box-shadow:0 0 6px rgba(34,197,94,0.55); flex-shrink:0;
+    animation:pglow 2s infinite;
+}
+@keyframes pglow{0%,100%{opacity:1}50%{opacity:0.4}}
+</style>
+
+<div class="otp-root">
+    <div class="aurora-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="otp-card">
+
+        <!-- Shield icon -->
+        <div class="shield-wrap">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+                 stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <polyline points="9 12 11 14 15 10"/>
+            </svg>
+        </div>
+
+        <div class="otp-eyebrow">Two-Factor Authentication</div>
+        <h1 class="otp-title">Admin Verification</h1>
+
+        <p class="otp-sub">
+            {% if dev_mode %}
+                Check your <strong>Flask terminal</strong> for the OTP code.
+            {% else %}
+                {% set parts = admin_email.split('@') %}
+                A 6-digit code was sent to<br>
+                <strong>{{ admin_email[:2] }}***@{{ parts[1] if parts|length > 1 else '...' }}</strong>
+            {% endif %}
+        </p>
+
+        <!-- Dev mode notice -->
+        {% if dev_mode %}
+        <div class="dev-banner">
+            <strong>⚙ Dev Mode</strong> — No email configured.<br>
+            The OTP is printed in the terminal where Flask is running. To enable real emails,
+            add <code>ADMIN_EMAIL_SENDER</code> and <code>ADMIN_EMAIL_PASSWORD</code> to your <code>.env</code>.
+        </div>
+        {% endif %}
+
+        <!-- Flash messages from Flask -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for cat, msg in messages %}
+                <div class="flash-msg flash-{{ cat }}">{{ msg }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <!-- Countdown timer -->
+        <div class="countdown-bar">
+            <span class="cd-label">⏱ OTP expires in</span>
+            <span class="cd-timer" id="countdown">5:00</span>
+        </div>
+
+        <!-- OTP form — posts to /admin/verify-otp (app.py line 1466) -->
+        <form method="POST" action="/admin/otp-verify" id="otp-form">
+            <input type="hidden" name="otp" id="otp-hidden">
+
+            <div class="otp-inputs">
+                <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" id="d0">
+                <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" id="d1">
+                <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" id="d2">
+                <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" id="d3">
+                <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" id="d4">
+                <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" id="d5">
+            </div>
+
+            <button type="submit" class="submit-btn" id="verify-btn" disabled>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Verify &amp; Enter Dashboard
+            </button>
+        </form>
+
+        <!-- Resend + back -->
+        <div class="otp-actions">
+            <button class="action-btn" id="resend-btn" onclick="resendOTP()">↺ Resend OTP</button>
+            <a href="/admin/login" class="back-link">← Back to login</a>
+        </div>
+
+        <div class="secure-note">
+            <span class="sec-dot"></span>
+            OTP valid 5 min &middot; Max 5 attempts &middot; One-time use
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── 6 individual digit boxes ──────────────────────────
+const digits = [0,1,2,3,4,5].map(i => document.getElementById(`d${i}`));
+const hidden  = document.getElementById('otp-hidden');
+const verBtn  = document.getElementById('verify-btn');
+
+function syncHidden(){
+    const val = digits.map(d => d.value).join('');
+    hidden.value = val;
+    verBtn.disabled = (val.length < 6);
+    digits.forEach(d => d.classList.toggle('filled', d.value !== ''));
+}
+
+digits.forEach((d, i) => {
+    // Only allow digits
+    d.addEventListener('input', () => {
+        d.value = d.value.replace(/\D/g, '').slice(-1);
+        syncHidden();
+        if (d.value && i < 5) digits[i+1].focus();
+    });
+    // Backspace moves to previous
+    d.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !d.value && i > 0) {
+            digits[i-1].value = '';
+            digits[i-1].focus();
+            syncHidden();
+        }
+    });
+    // Paste a full 6-digit code
+    d.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+        text.split('').slice(0, 6).forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
+        syncHidden();
+        digits[Math.min(text.length, 5)].focus();
+    });
+});
+
+// Auto-focus first box on load
+digits[0].focus();
+
+// ── 5-minute countdown ────────────────────────────────
+let secs = 300;
+const timerEl = document.getElementById('countdown');
+
+function fmtTime(s){ return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
+
+const iv = setInterval(() => {
+    secs--;
+    if (secs <= 0) {
+        clearInterval(iv);
+        timerEl.textContent = '0:00';
+        timerEl.classList.add('urgent');
+        verBtn.disabled = true;
+        verBtn.textContent = 'OTP Expired — Request New';
+        digits.forEach(d => d.disabled = true);
+    } else {
+        timerEl.textContent = fmtTime(secs);
+        if (secs <= 30) timerEl.classList.add('urgent');
+    }
+}, 1000);
+
+// ── Resend OTP (60s cooldown) ─────────────────────────
+let resendLocked = false;
+
+function resendOTP() {
+    if (resendLocked) return;
+    resendLocked = true;
+
+    const btn = document.getElementById('resend-btn');
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    // POST to /admin/resend-otp (app.py line 1502)
+    fetch('/admin/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Reset countdown
+            secs = 300;
+            timerEl.textContent = fmtTime(secs);
+            timerEl.classList.remove('urgent');
+            digits.forEach(d => { d.value = ''; d.disabled = false; });
+            syncHidden();
+            digits[0].focus();
+            btn.textContent = '✓ Sent! Wait 60s';
+        } else {
+            btn.textContent = '↺ Resend OTP';
+            btn.disabled = false;
+            resendLocked = false;
+        }
+    })
+    .catch(() => {
+        btn.textContent = '↺ Resend OTP';
+        btn.disabled = false;
+        resendLocked = false;
+    });
+
+    // Re-enable after 60s regardless
+    setTimeout(() => {
+        resendLocked = false;
+        btn.disabled = false;
+        btn.textContent = '↺ Resend OTP';
+    }, 60000);
+}
+</script>
+
+{% endblock %}

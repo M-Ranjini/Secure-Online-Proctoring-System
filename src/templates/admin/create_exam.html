@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto;">
+    <div class="glass-card" style="padding: 40px; border-radius: 15px;">
+        <h1 style="color: var(--primary); margin-bottom: 10px;">Deploy New Assessment</h1>
+        <p class="muted-color" style="margin-bottom: 30px;">Configure exam parameters for the proctoring engine.</p>
+        
+        <form action="{{ url_for('exam_mgmt.create_exam') }}" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Exam Title</label>
+                <input type="text" name="title" placeholder="e.g. Midterm Physics" required 
+                       style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Unique Exam Code</label>
+                <input type="text" name="exam_code" placeholder="e.g. PHY-2026-A" required
+                       style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Duration (minutes)</label>
+                <input type="number" name="duration" value="60" required
+                       style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+            </div>
+            
+            <button type="submit" class="launch-btn" style="padding: 15px; border-radius: 8px; cursor: pointer; border: none; font-weight: bold; margin-top: 10px;">
+                Initialize Assessment
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

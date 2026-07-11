@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}Identity Verification | SecureExam AI{% endblock %}
+
+{% block head_styles %}
+<style>
+body { overflow: hidden !important; }
+
+.vf-root {
+    position: fixed; inset: 0;
+    display: flex; z-index: 2;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* ── LEFT PANEL ── */
+.vf-left {
+    flex: 1.1;
+    background: rgba(4,10,24,0.7);
+    border-right: 1px solid rgba(59,130,246,0.1);
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding: 60px 56px;
+    position: relative; z-index: 2;
+    animation: slideUp 0.6s ease both;
+}
+
+.vf-step-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: #60a5fa; margin-bottom: 28px;
+}
+.vf-step-badge::before { content:''; width: 28px; height: 1px; background: #60a5fa; }
+
+.vf-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(36px, 4.5vw, 58px);
+    font-weight: 900; line-height: 1.0;
+    letter-spacing: -2px; color: #f0f7ff;
+    margin-bottom: 20px;
+}
+.vf-title span {
+    font-style: italic;
+    background: linear-gradient(135deg, #60a5fa, #22d3ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.vf-desc {
+    font-size: 16px; color: rgba(148,179,220,0.6);
+    line-height: 1.8; max-width: 420px; margin-bottom: 44px;
+}
+
+/* Tips */
+.tip-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 48px; }
+.tip-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 20px;
+    background: rgba(8,20,50,0.55);
+    border: 1px solid rgba(59,130,246,0.1);
+    border-radius: 12px;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.tip-item:hover { border-color: rgba(59,130,246,0.25); transform: translateX(4px); }
+.tip-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.tip-title { font-size: 14px; font-weight: 700; color: #c8d8eb; margin-bottom: 3px; }
+.tip-desc  { font-size: 12px; color: rgba(148,179,220,0.5); line-height: 1.5; }
+
+/* Security chip */
+.sec-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.sec-chip {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 14px;
+    background: rgba(34,197,94,0.06);
+    border: 1px solid rgba(34,197,94,0.15);
+    border-radius: 100px;
+    font-size: 12px; font-weight: 600;
+    color: rgba(134,239,172,0.6);
+}
+.chip-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px rgba(34,197,94,0.6); animation: cglow 2s infinite; flex-shrink: 0; }
+@keyframes cglow { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── RIGHT PANEL ── */
+.vf-right {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 52px;
+    position: relative; z-index: 2;
+    animation: slideUp 0.6s 0.15s ease both;
+}
+
+.cam-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(148,179,220,0.4);
+    margin-bottom: 20px; text-align: center;
+}
+
+/* Camera */
+.camera-frame {
+    width: 100%; max-width: 420px;
+    position: relative; border-radius: 20px;
+    overflow: hidden; background: #000;
+    border: 1px solid rgba(59,130,246,0.2);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.06), 0 24px 48px rgba(0,0,0,0.4);
+    margin-bottom: 24px;
+}
+.camera-frame video { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+
+/* Corner brackets */
+.cam-corners { position: absolute; inset: 0; pointer-events: none; }
+.cc { position: absolute; width: 22px; height: 22px; border-color: #3b82f6; border-style: solid; }
+.cc.tl { top:12px;    left:12px;   border-width:2.5px 0 0 2.5px; border-radius:3px 0 0 0; }
+.cc.tr { top:12px;    right:12px;  border-width:2.5px 2.5px 0 0; border-radius:0 3px 0 0; }
+.cc.bl { bottom:12px; left:12px;   border-width:0 0 2.5px 2.5px; border-radius:0 0 0 3px; }
+.cc.br { bottom:12px; right:12px;  border-width:0 2.5px 2.5px 0; border-radius:0 0 3px 0; }
+
+/* Countdown overlay */
+#countdown-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.72);
+    display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+}
+#countdown-num {
+    font-family: 'Fraunces', serif; font-size: 88px;
+    font-weight: 900; color: white; line-height: 1;
+}
+.cd-label-txt {
+    font-size: 12px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(148,179,220,0.7);
+}
+
+/* Scanning line animation */
+.scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+    animation: scanMove 3s ease-in-out infinite;
+    opacity: 0.6;
+}
+@keyframes scanMove { 0%{top:0%} 50%{top:95%} 100%{top:0%} }
+
+.live-pill {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(0,0,0,0.75); color: #10b981;
+    font-size: 10px; font-weight: 800; letter-spacing: 2px;
+    padding: 4px 10px; border-radius: 5px;
+}
+.pulse { animation: lpulse 2s infinite; }
+@keyframes lpulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Status and checklist */
+.quick-checks {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 20px;
+    width: 100%; max-width: 420px;
+}
+.qc-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 500; color: rgba(148,179,220,0.55);
+}
+.qc-dot { width: 6px; height: 6px; flex-shrink: 0; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 5px rgba(59,130,246,0.5); }
+
+#status-text {
+    font-size: 14px; font-weight: 600;
+    text-align: center; min-height: 20px;
+    margin-bottom: 20px;
+    width: 100%; max-width: 420px;
+}
+
+/* Verify button */
+.verify-btn {
+    width: 100%; max-width: 420px;
+    padding: 15px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6);
+    color: white; border: none; border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px; font-weight: 800; letter-spacing: 0.5px;
+    cursor: pointer; transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.4);
+}
+.verify-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(37,99,235,0.5); }
+.verify-btn:active { transform: translateY(0); }
+.verify-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.vf-footnote {
+    font-size: 11px; color: rgba(148,179,220,0.25);
+    text-align: center; font-weight: 600;
+}
+
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:800px) { .vf-left{display:none;} .vf-right{padding:32px 24px;} }
+</style>
+{% endblock %}
+
+{% block show_footer %}{% endblock %}
+
+{% block content %}
+<canvas id="canvas" style="display:none"></canvas>
+
+<div class="vf-root">
+
+    <!-- ── LEFT PANEL ── -->
+    <div class="vf-left">
+        <div class="vf-step-badge">Step 2 of 3</div>
+        <h1 class="vf-title">Verify Your<br><span>Identity</span></h1>
+        <p class="vf-desc">
+            Our AI will match your face against your registered biometric.
+            Ensure good lighting and face the camera directly.
+        </p>
+
+        <div class="tip-list">
+            <div class="tip-item">
+                <div class="tip-icon">💡</div>
+                <div>
+                    <div class="tip-title">Good Lighting</div>
+                    <div class="tip-desc">Sit facing a light source. Avoid backlighting from windows behind you.</div>
+                </div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">👁</div>
+                <div>
+                    <div class="tip-title">Eyes Clearly Visible</div>
+                    <div class="tip-desc">Remove sunglasses. Look directly into the camera lens.</div>
+                </div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">📐</div>
+                <div>
+                    <div class="tip-title">Centre Your Face</div>
+                    <div class="tip-desc">Position your face within the blue frame and hold still during countdown.</div>
+                </div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">🔄</div>
+                <div>
+                    <div class="tip-title">Multiple Attempts</div>
+                    <div class="tip-desc">If verification fails, adjust lighting and try again. You have unlimited retries.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sec-chips">
+            <div class="sec-chip"><div class="chip-dot"></div>On-device processing</div>
+            <div class="sec-chip"><div class="chip-dot"></div>Encrypted & never shared</div>
+            <div class="sec-chip"><div class="chip-dot"></div>GDPR compliant</div>
+        </div>
+    </div>
+
+    <!-- ── RIGHT PANEL ── -->
+    <div class="vf-right">
+        <div class="cam-label">Live Camera Feed</div>
+
+        <div class="camera-frame">
+            <video id="video" autoplay playsinline></video>
+            <div class="scan-line"></div>
+            <div class="cam-corners">
+                <span class="cc tl"></span><span class="cc tr"></span>
+                <span class="cc bl"></span><span class="cc br"></span>
+            </div>
+            <div id="countdown-overlay">
+                <div id="countdown-num">3</div>
+                <div class="cd-label-txt">Hold Still</div>
+            </div>
+            <div class="live-pill pulse">● LIVE</div>
+        </div>
+
+        <div class="quick-checks">
+            <div class="qc-item"><span class="qc-dot"></span>Face centred in frame</div>
+            <div class="qc-item"><span class="qc-dot"></span>Good lighting</div>
+            <div class="qc-item"><span class="qc-dot"></span>Eyes clearly visible</div>
+        </div>
+
+        <p id="status-text"></p>
+
+        <button onclick="startVerification()" class="verify-btn" id="verify-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span id="btn-label">Verify Identity</span>
+        </button>
+
+        <div class="vf-footnote">Biometric data is encrypted and never shared with third parties</div>
+    </div>
+
+</div>
+
+<script>
+const video   = document.getElementById("video");
+const overlay = document.getElementById("countdown-overlay");
+const countEl = document.getElementById("countdown-num");
+const canvas  = document.getElementById("canvas");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => { video.srcObject = stream; })
+    .catch(() => {
+        const s = document.getElementById("status-text");
+        s.style.color = "#ef4444";
+        s.innerText = "✗ Camera access denied. Please allow camera in browser settings.";
+    });
+
+function startVerification() {
+    const btn   = document.getElementById("verify-btn");
+    const label = document.getElementById("btn-label");
+    btn.disabled     = true;
+    label.innerText  = "Verifying...";
+    overlay.style.display = "flex";
+    let count = 3;
+    countEl.innerText = count;
+    const timer = setInterval(() => {
+        count--;
+        if (count > 0) { countEl.innerText = count; }
+        else { clearInterval(timer); capture(); }
+    }, 1000);
+}
+
+function capture() {
+    const statusEl = document.getElementById("status-text");
+    const btn      = document.getElementById("verify-btn");
+    const label    = document.getElementById("btn-label");
+    canvas.width  = 640; canvas.height = 480;
+    canvas.getContext("2d").drawImage(video, 0, 0, 640, 480);
+    const imageData = canvas.toDataURL("image/jpeg", 0.8);
+    fetch("{{ url_for('face_verify.verify_face_capture') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData })
+    })
+    .then(r => r.json())
+    .then(data => {
+        overlay.style.display = "none";
+        if (data.status === "success") {
+            statusEl.style.color = "#22c55e";
+            statusEl.innerHTML   = "✓ Identity Verified — Access Granted";
+            setTimeout(() => { window.location = data.redirect; }, 1200);
+        } else {
+            statusEl.style.color = "#ef4444";
+            statusEl.innerText   = "✗ " + (data.message || "Face not recognised. Try again.");
+            btn.disabled         = false;
+            label.innerText      = "Retry Verification";
+        }
+    })
+    .catch(() => {
+        overlay.style.display = "none";
+        statusEl.style.color  = "#ef4444";
+        statusEl.innerText    = "✗ Connection error. Please refresh.";
+        btn.disabled          = false;
+        label.innerText       = "Retry Verification";
+    });
+}
+</script>
+{% endblock %}

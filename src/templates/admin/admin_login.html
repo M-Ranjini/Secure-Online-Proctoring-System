@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% block title %}Admin Login | SecureExam AI{% endblock %}
+
+{% block content %}
+<style>
+body { padding-top: 0 !important; overflow: hidden; }
+.global-nav { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.login-root {
+    position: fixed; inset: 0; display: flex;
+    font-family: 'Outfit', sans-serif;
+    background: #040d1a; overflow: hidden;
+}
+
+/* ── AURORA BG ── */
+.aurora-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.aurora-bg::before {
+    content: ''; position: absolute; width: 900px; height: 900px;
+    top: -200px; left: -100px;
+    background: radial-gradient(ellipse, rgba(124,58,237,0.28) 0%, transparent 65%);
+    animation: drift1 12s ease-in-out infinite alternate; border-radius: 50%;
+}
+.aurora-bg::after {
+    content: ''; position: absolute; width: 700px; height: 700px;
+    bottom: -150px; left: 30%;
+    background: radial-gradient(ellipse, rgba(168,85,247,0.15) 0%, transparent 65%);
+    animation: drift2 15s ease-in-out infinite alternate; border-radius: 50%;
+}
+.aurora-orb {
+    position: absolute; width: 500px; height: 500px; top: 10%; right: 5%;
+    background: radial-gradient(ellipse, rgba(29,78,216,0.12) 0%, transparent 65%);
+    animation: drift3 10s ease-in-out infinite alternate; border-radius: 50%;
+}
+@keyframes drift1 { from{transform:translate(0,0) scale(1)} to{transform:translate(60px,40px) scale(1.08)} }
+@keyframes drift2 { from{transform:translate(0,0) scale(1)} to{transform:translate(-40px,-60px) scale(1.12)} }
+@keyframes drift3 { from{transform:translate(0,0) scale(1)} to{transform:translate(30px,-40px) scale(0.9)} }
+
+.grid-overlay {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+        linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* ── LEFT PANEL ── */
+.left-panel {
+    flex: 1; position: relative; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 60px 64px;
+}
+.left-panel > * { animation: slideUp 0.7s ease both; }
+@keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+.brand-row {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 60px; animation-delay: 0s;
+}
+.brand-shield {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    color: white; box-shadow: 0 8px 24px rgba(124,58,237,0.4);
+}
+.brand-name { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.2px; }
+.brand-tagline { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(196,181,253,0.6); }
+
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(168,85,247,0.3); border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #c4b5fd; margin-bottom: 28px;
+}
+.badge-pulse {
+    width: 6px; height: 6px; background: #a855f7; border-radius: 50%;
+    box-shadow: 0 0 8px #a855f7; animation: pulse-glow 2s infinite;
+}
+@keyframes pulse-glow { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(40px, 4vw, 60px); font-weight: 900;
+    line-height: 1.05; letter-spacing: -2px;
+    color: #f0f7ff; margin-bottom: 22px;
+}
+.hero-title .highlight {
+    font-style: italic;
+    background: linear-gradient(135deg, #a855f7, #c084fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-desc {
+    font-size: 15px; font-weight: 400; color: rgba(148,179,220,0.65);
+    line-height: 1.8; max-width: 420px; margin-bottom: 44px;
+}
+
+/* Admin capabilities list */
+.admin-caps { list-style: none; display: flex; flex-direction: column; gap: 14px; animation-delay: 0.16s; }
+.admin-caps li {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 14px; color: rgba(148,179,220,0.65); font-weight: 500;
+}
+.cap-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    background: rgba(124,58,237,0.15); border: 1px solid rgba(168,85,247,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.cap-text strong { color: #e2d9f3; font-weight: 700; }
+
+/* Security badge */
+.sec-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.15); border-radius: 8px;
+    font-size: 12px; font-weight: 700; color: rgba(252,165,165,0.6);
+    margin-top: 40px; animation-delay: 0.24s;
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+    width: 480px; min-height: 100vh; position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; padding: 32px;
+    background: rgba(4,8,22,0.6); backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(168,85,247,0.1);
+}
+
+.form-glass {
+    background: rgba(10,10,30,0.7); backdrop-filter: blur(32px);
+    border: 1px solid rgba(255,255,255,0.09); border-radius: 24px;
+    padding: 44px 40px; width: 100%;
+    animation: slideUp 0.8s 0.1s ease both; position: relative; overflow: hidden;
+}
+.form-glass::before {
+    content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(168,85,247,0.5), transparent);
+}
+
+.card-kicker {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+    color: rgba(196,181,253,0.5); margin-bottom: 16px;
+}
+.kicker-line { flex: 1; height: 1px; background: rgba(168,85,247,0.2); }
+
+.card-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(26px, 2.5vw, 32px); font-weight: 900;
+    line-height: 1.1; color: #f0f7ff; margin-bottom: 10px; letter-spacing: -1px;
+}
+.card-sub {
+    font-size: 14px; color: rgba(148,179,220,0.5);
+    line-height: 1.7; margin-bottom: 32px;
+}
+
+/* Fields */
+.field { margin-bottom: 20px; }
+.field-label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: rgba(148,179,220,0.6); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px;
+}
+.input-wrap { position: relative; }
+.field-input {
+    width: 100%; padding: 14px 18px;
+    background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px; color: #f0f7ff;
+    font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 500;
+    outline: none; transition: all 0.25s;
+}
+.field-input:focus {
+    border-color: rgba(168,85,247,0.6);
+    background: rgba(168,85,247,0.05);
+    box-shadow: 0 0 0 3px rgba(168,85,247,0.12);
+}
+.field-input::placeholder { color: rgba(148,179,220,0.3); }
+
+.pwd-toggle {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: rgba(148,179,220,0.4); cursor: pointer; padding: 4px;
+}
+
+.submit-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #a855f7 100%);
+    color: white; border: none; border-radius: 12px;
+    font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800;
+    letter-spacing: 0.5px; cursor: pointer; transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 20px; position: relative; overflow: hidden;
+    box-shadow: 0 8px 28px rgba(124,58,237,0.4);
+}
+.submit-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+    opacity: 0; transition: opacity 0.25s;
+}
+.submit-btn:hover::before { opacity: 1; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(124,58,237,0.5); }
+
+.btn-arrow { display: flex; align-items: center; transition: transform 0.2s; }
+.submit-btn:hover .btn-arrow { transform: translateX(5px); }
+
+.card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: rgba(148,179,220,0.4); margin-bottom: 18px;
+}
+.card-footer a { color: rgba(148,179,220,0.6); text-decoration: none; transition: color 0.2s; }
+.card-footer a:hover { color: #a855f7; }
+
+.secure-row {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: rgba(124,58,237,0.06); border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 8px; font-size: 12px; font-weight: 600; color: rgba(196,181,253,0.5);
+}
+.secure-dot {
+    width: 7px; height: 7px; background: #a855f7; border-radius: 50%;
+    box-shadow: 0 0 6px rgba(168,85,247,0.6); animation: pulse-glow 2s infinite; flex-shrink: 0;
+}
+
+.otp-notice {
+    background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;
+    font-size: 13px; color: rgba(147,197,253,0.7); line-height: 1.6;
+}
+.otp-notice strong { color: #93c5fd; }
+
+/* Flash messages */
+.flash-msg { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; font-weight: 600; }
+.flash-error   { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; }
+.flash-info    { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); color: #93c5fd; }
+.flash-success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+
+@media (max-width: 960px) {
+    .left-panel { display: none; }
+    .right-panel { width: 100%; background: #040d1a; border-left: none; }
+}
+</style>
+
+<div class="login-root">
+    <div class="aurora-bg"></div>
+    <div class="aurora-orb"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- LEFT -->
+    <div class="left-panel">
+        <div class="brand-row">
+            <div class="brand-shield">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="brand-name">SecureExam AI</div>
+                <div class="brand-tagline">Admin Control Centre</div>
+            </div>
+        </div>
+
+        <div style="animation-delay:0.08s">
+            <div class="hero-badge"><span class="badge-pulse"></span>Restricted Access — Admins Only</div>
+            <h1 class="hero-title">
+                Command Your<br>
+                <span class="highlight">Exam Centre.</span>
+            </h1>
+            <p class="hero-desc">
+                Full oversight of live exams, student monitoring, violation evidence, and analytics — secured by two-factor authentication.
+            </p>
+        </div>
+
+        <ul class="admin-caps">
+            <li><div class="cap-icon">📊</div><div class="cap-text"><strong>Live Monitoring</strong> — Real-time student webcam feeds &amp; violation alerts</div></li>
+            <li><div class="cap-icon">📝</div><div class="cap-text"><strong>Exam Management</strong> — Create, schedule, and publish question papers</div></li>
+            <li><div class="cap-icon">🔍</div><div class="cap-text"><strong>Evidence Gallery</strong> — Review flagged screenshots &amp; AI violation logs</div></li>
+            <li><div class="cap-icon">📈</div><div class="cap-text"><strong>Analytics</strong> — Score distributions, attempt patterns &amp; reports</div></li>
+        </ul>
+
+        <div class="sec-badge">
+            ⚠️ Unauthorised access is monitored and logged. All admin actions are audit-trailed.
+        </div>
+    </div>
+
+    <!-- RIGHT: FORM -->
+    <div class="right-panel">
+        <div class="form-glass">
+
+            <div class="card-kicker">
+                <span class="kicker-line"></span>
+                Admin Access
+            </div>
+            <h2 class="card-title">Sign in to<br>Admin Console</h2>
+            <p class="card-sub">After verifying your credentials, a one-time code will be sent to your registered email.</p>
+
+            <div class="otp-notice">
+                🔐 <strong>2-Factor Authentication active.</strong> A 6-digit OTP will be emailed after password verification.
+            </div>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                    <div class="flash-msg flash-{{ cat }}">{{ msg }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" action="/admin/login">
+
+                <div class="field">
+                    <label class="field-label" for="email-in">Admin Email</label>
+                    <div class="input-wrap">
+                        <input id="email-in" type="email" name="email"
+                               class="field-input" placeholder="admin@university.edu"
+                               required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="pwd-in">Password</label>
+                    <div class="input-wrap">
+                        <input id="pwd-in" type="password" name="password"
+                               class="field-input" placeholder="Enter your password"
+                               required autocomplete="current-password">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd()" tabindex="-1">
+                            <svg id="eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg id="eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>Continue — Send OTP</span>
+                    <span class="btn-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+
+            <div class="card-footer">
+                <a href="/">← Back to home</a>
+                <span>Admin access only</span>
+            </div>
+
+            <div class="secure-row">
+                <div class="secure-dot"></div>
+                <span>2FA active · All sessions logged · Unauthorised access tracked</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePwd() {
+    const inp = document.getElementById("pwd-in");
+    const s   = document.getElementById("eye-show");
+    const h   = document.getElementById("eye-hide");
+    if (inp.type === "password") { inp.type = "text"; s.style.display="none"; h.style.display="block"; }
+    else { inp.type = "password"; s.style.display="block"; h.style.display="none"; }
+}
+</script>
+
+{% endblock %}

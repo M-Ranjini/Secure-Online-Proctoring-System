@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard | SecureExam AI{% endblock %}
+
+{% block head_styles %}
+<style>
+html,body { overflow: hidden !important; }
+
+/* ═══════════════════ ROOT LAYOUT ═══════════════════ */
+.ds-root {
+    position: fixed; inset: 0;
+    display: flex;
+    font-family: 'Outfit', sans-serif;
+    background: #040d1a;
+    z-index: 2;
+}
+
+/* ═══════════════════ LEFT SIDEBAR ═══════════════════ */
+.ds-sidebar {
+    width: 300px; flex-shrink: 0;
+    background: rgba(3,8,22,0.97);
+    border-right: 1px solid rgba(59,130,246,0.1);
+    display: flex; flex-direction: column;
+    padding: 32px 24px;
+    overflow-y: auto; scrollbar-width: none;
+    animation: fadeIn 0.5s ease both;
+}
+.ds-sidebar::-webkit-scrollbar { display: none; }
+@keyframes fadeIn { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+
+/* Brand */
+.sb-brand {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 40px;
+}
+.sb-shield {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 6px 18px rgba(37,99,235,0.4);
+}
+.sb-brand-name { font-family:'Fraunces',serif; font-size:17px; font-weight:900; color:#f0f7ff; }
+.sb-brand-sub  { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(148,179,220,0.3); }
+
+/* Student avatar block */
+.student-profile {
+    display: flex;
+    flex-direction: column; 
+    align-items: center; /* Keeps children centered */
+    padding: 28px 20px;
+    background: rgba(8,20,50,0.6);
+    border: 1px solid rgba(59,130,246,0.12);
+    border-radius: 20px;
+    margin-bottom: 24px;
+    position: relative;
+    /* Remove overflow: hidden if it's clipping your status dots */
+}
+.student-profile::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg,transparent,rgba(59,130,246,0.5),transparent);
+}
+.avatar-ring {
+    width: 76px; 
+    height: 76px;
+    flex-shrink: 0; /* PREVENTS COLLAPSING */
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 32px; 
+    font-weight: 900; 
+    color: white;
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.4);
+    line-height: 1; /* Centers the letter vertically */
+}
+
+/* 3. Fix the online dot positioning */
+.online-dot {
+    position: absolute; 
+    bottom: 4px; 
+    right: 4px;
+    width: 14px; 
+    height: 14px;
+    background: #22c55e; 
+    border-radius: 50%;
+    border: 2px solid #040d1a; /* Matches background for 'cutout' look */
+    z-index: 5;
+}
+@keyframes onpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+.student-name {
+    font-family: 'Fraunces',serif;
+    font-size: 20px; font-weight: 900;
+    color: #f0f7ff; margin-bottom: 4px;
+    text-align: center;
+}
+.student-email {
+    font-size: 12px; font-weight: 500;
+    color: rgba(148,179,220,0.4);
+    font-family: 'Outfit',monospace;
+    margin-bottom: 20px; text-align: center;
+    word-break: break-all;
+}
+
+/* Integrity ring */
+.integrity-wrap { width: 100%; text-align: center; margin-bottom: 16px; }
+.integrity-label { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(148,179,220,0.35); margin-bottom: 10px; }
+.integrity-ring-outer {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px;
+    position: relative;
+}
+.integrity-score {
+    font-family: 'Fraunces',serif;
+    font-size: 22px; font-weight: 900;
+    line-height: 1;
+}
+.integrity-sub { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.55; }
+
+/* AI Status indicators */
+.ai-status-list { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.ai-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    font-size: 13px; font-weight: 600; color: rgba(148,179,220,0.6);
+}
+.ai-status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5);
+    animation: onpulse 2s infinite;
+}
+.ai-status-dot.amber { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+.ai-status-dot.red   { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+
+/* Biometric locked chip */
+.bio-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.18);
+    border-radius: 10px;
+    font-size: 12px; font-weight: 700;
+    color: rgba(134,239,172,0.7);
+    margin-top: 16px; margin-bottom: 24px;
+}
+.bio-chip-dot { width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 6px rgba(16,185,129,0.6); flex-shrink: 0; }
+
+/* Risk banner */
+.risk-banner-sb {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px; font-weight: 600; color: rgba(239,68,68,0.8);
+    display: flex; align-items: flex-start; gap: 10px;
+}
+
+/* Sidebar section label */
+.sb-sec { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(148,179,220,0.25); margin-bottom: 10px; margin-top: 8px; }
+
+/* Logout */
+.sb-logout {
+    margin-top: auto; padding-top: 24px;
+    border-top: 1px solid rgba(59,130,246,0.08);
+}
+.logout-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 12px;
+    background: rgba(239,68,68,0.07);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #ef4444; border-radius: 10px;
+    font-family: 'Outfit',sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.2s;
+}
+.logout-btn:hover { background: rgba(239,68,68,0.14); }
+
+/* ═══════════════════ MAIN CONTENT ═══════════════════ */
+.ds-main {
+    flex: 1;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+
+/* Top header bar */
+.ds-topbar {
+    height: 60px; flex-shrink: 0;
+    background: rgba(3,8,22,0.95);
+    border-bottom: 1px solid rgba(59,130,246,0.08);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    backdrop-filter: blur(12px);
+}
+.topbar-greeting {
+    font-family: 'Fraunces',serif;
+    font-size: 20px; font-weight: 900;
+    color: #f0f7ff; letter-spacing: -0.5px;
+}
+.topbar-greeting span { color: #60a5fa; font-style: italic; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-time { font-size: 13px; font-weight: 600; color: rgba(148,179,220,0.4); font-family: 'Outfit',monospace; }
+.topbar-live { display: flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #10b981; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; padding: 5px 12px; border-radius: 6px; }
+.topbar-live-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: onpulse 1.5s infinite; }
+
+/* Content area (scrollable) */
+.ds-content {
+    flex: 1; overflow-y: auto; padding: 28px 32px;
+    scrollbar-width: thin; scrollbar-color: rgba(59,130,246,0.2) transparent;
+}
+.ds-content::-webkit-scrollbar { width: 5px; }
+.ds-content::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 3px; }
+
+/* Last result banner */
+.result-hero {
+    background: linear-gradient(135deg,rgba(8,20,50,0.9),rgba(16,40,100,0.7));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 18px; padding: 24px 28px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 24px;
+    position: relative; overflow: hidden;
+    animation: slideUp 0.5s ease both;
+}
+.result-hero::before {
+    content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg,transparent,rgba(96,165,250,0.4),transparent);
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.result-circle {
+    width: 80px; height: 80px; border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border: 3px solid; flex-shrink: 0;
+}
+.result-pct { font-family:'Fraunces',serif; font-size: 24px; font-weight: 900; line-height: 1; }
+.result-lbl { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: 0.55; }
+.result-detail-title { font-size: 18px; font-weight: 700; color: #f0f7ff; margin-bottom: 4px; }
+.result-detail-sub   { font-size: 14px; color: rgba(148,179,220,0.5); }
+
+/* Section heading */
+.section-heading {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+}
+.section-title {
+    font-family: 'Fraunces',serif;
+    font-size: 22px; font-weight: 900;
+    color: #f0f7ff; letter-spacing: -0.5px;
+}
+.section-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    background: rgba(59,130,246,0.12); color: #60a5fa;
+    border: 1px solid rgba(59,130,246,0.2);
+}
+
+/* EXAM CARDS — not table */
+.exam-cards { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+.exam-card {
+    background: rgba(8,20,50,0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 22px 26px;
+    display: flex; align-items: center; gap: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative; overflow: hidden;
+    animation: slideUp 0.4s ease both;
+}
+.exam-card::before {
+    content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg,transparent,rgba(96,165,250,0.25),transparent);
+}
+.exam-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); }
+
+.exam-icon {
+    width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+}
+.exam-info { flex: 1; min-width: 0; }
+.exam-title { font-family: 'Fraunces',serif; font-size: 18px; font-weight: 900; color: #f0f7ff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exam-meta  { display: flex; gap: 12px; flex-wrap: wrap; }
+.exam-meta-chip {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; color: rgba(148,179,220,0.5);
+}
+.exam-meta-chip span { color: #60a5fa; font-weight: 700; }
+
+.start-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+    color: white; border: none; border-radius: 10px;
+    font-family: 'Outfit',sans-serif;
+    font-size: 14px; font-weight: 800;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.2s; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.45); }
+
+/* Empty exam state */
+.empty-exams {
+    background: rgba(8,20,50,0.5);
+    border: 1px dashed rgba(59,130,246,0.2);
+    border-radius: 16px; padding: 48px;
+    text-align: center; margin-bottom: 32px;
+}
+.empty-exams-icon { font-size: 48px; margin-bottom: 16px; display: block; }
+.empty-exams-title { font-family:'Fraunces',serif; font-size: 20px; font-weight: 900; color: rgba(148,179,220,0.4); margin-bottom: 6px; }
+.empty-exams-sub   { font-size: 14px; color: rgba(148,179,220,0.25); }
+
+/* VIOLATION TIMELINE */
+.viol-timeline { display: flex; flex-direction: column; gap: 0; }
+.viol-tl-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    animation: slideUp 0.4s ease both;
+}
+.viol-tl-item:last-child { border-bottom: none; }
+.vl-indicator {
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0; width: 18px; padding-top: 3px;
+}
+.vl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.vl-line { width: 2px; background: rgba(255,255,255,0.06); flex: 1; min-height: 20px; margin-top: 4px; }
+.viol-tl-item:last-child .vl-line { display: none; }
+.vl-content { flex: 1; min-width: 0; }
+.vl-reason { font-size: 15px; font-weight: 600; color: #c8d8eb; margin-bottom: 3px; }
+.vl-time   { font-size: 12px; color: rgba(148,179,220,0.4); }
+.vl-badge  { flex-shrink: 0; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; }
+.vl-crit   { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+.vl-high   { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+.vl-low    { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+
+/* Past results rows */
+.past-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.past-row:last-child { border-bottom: none; }
+.past-row-title { font-size: 15px; font-weight: 600; color: #c8d8eb; margin-bottom: 3px; }
+.past-row-date  { font-size: 12px; color: rgba(148,179,220,0.4); }
+.past-score { font-family:'Fraunces',serif; font-size:20px; font-weight:900; }
+
+/* Glass section */
+.gs {
+    background: rgba(8,20,50,0.55);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; padding: 24px 28px;
+    margin-bottom: 24px;
+    position: relative; overflow: hidden;
+}
+.gs::before {
+    content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg,transparent,rgba(96,165,250,0.25),transparent);
+}
+
+@media(max-width:900px) { .ds-sidebar{width:240px;} }
+@media(max-width:700px) { .ds-sidebar{display:none;} }
+</style>
+{% endblock %}
+
+{% block show_footer %}{% endblock %}
+
+{% block content %}
+{% set vc = violation_count if (violation_count is defined and violation_count) else 0 %}
+{% set integrity_score = [0, 100 - (vc * 10)] | max %}
+
+<div class="ds-root">
+
+  <!-- ════════════════ LEFT SIDEBAR ════════════════ -->
+  <div class="ds-sidebar">
+
+    <!-- Brand -->
+    <div class="sb-brand">
+      <div class="sb-shield">🛡️</div>
+      <div>
+        <div class="sb-brand-name">SecureExam AI</div>
+        <div class="sb-brand-sub">Student Portal</div>
+      </div>
+    </div>
+
+    <!-- Risk banner if needed -->
+    {% if vc > 8 %}
+    <div class="risk-banner-sb">
+      <span style="font-size:18px;flex-shrink:0;">🚨</span>
+      <div>
+        <div style="font-size:13px;font-weight:800;color:#ef4444;margin-bottom:3px;">High Risk Flag</div>
+        <div style="font-size:12px;">{{ vc }} violations — admin review pending</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Student profile card -->
+    <div class="student-profile">
+      <div class="avatar-ring">
+        {{ session.get('full_name','S')[0].upper() }}
+        <div class="online-dot"></div>
+      </div>
+      <div class="student-name">{{ session.get('full_name','Student').split()[0] }}</div>
+      <div class="student-email">{{ session.get('email','') }}</div>
+
+      <!-- Integrity score ring -->
+      <div class="integrity-wrap">
+        <div class="integrity-label">Integrity Score</div>
+        <div class="integrity-ring-outer"
+          style="background: conic-gradient(
+            {% if integrity_score >= 70 %}#10b981{% elif integrity_score >= 40 %}#f59e0b{% else %}#ef4444{% endif %}
+            {{ integrity_score * 3.6 }}deg,
+            rgba(255,255,255,0.06) 0deg
+          ); border-radius:50%;">
+          <div style="width:60px;height:60px;background:#040d1a;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="integrity-score"
+              style="color:{% if integrity_score >= 70 %}#10b981{% elif integrity_score >= 40 %}#f59e0b{% else %}#ef4444{% endif %}">
+              {{ integrity_score }}%
+            </div>
+            <div class="integrity-sub"
+              style="color:rgba(148,179,220,0.4);">Score</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Status -->
+    <div class="sb-sec">System Status</div>
+    <div class="ai-status-list" style="margin-bottom:20px;">
+      <div class="ai-row">
+        <span>Face Verified</span>
+        <div class="ai-status-dot"></div>
+      </div>
+      <div class="ai-row">
+        <span>AI Monitoring</span>
+        <div class="ai-status-dot"></div>
+      </div>
+      <div class="ai-row">
+        <span>Session Active</span>
+        <div class="ai-status-dot"></div>
+      </div>
+      <div class="ai-row">
+        <span>Violations</span>
+        <div class="ai-status-dot {% if vc > 5 %}red{% elif vc > 0 %}amber{% endif %}"></div>
+      </div>
+    </div>
+
+    <!-- Biometric lock -->
+    <div class="bio-chip">
+      <div class="bio-chip-dot"></div>
+      🔐 Biometric Locked — Admin Only Reset
+    </div>
+
+    <!-- Logout -->
+    <div class="sb-logout">
+      <a href="/logout" class="logout-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ════════════════ MAIN ════════════════ -->
+  <div class="ds-main">
+
+    <!-- Top bar -->
+    <div class="ds-topbar">
+      <div class="topbar-greeting">
+        Welcome back, <span>{{ session.get('full_name','Student').split()[0] }}</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-live">
+          <div class="topbar-live-dot"></div>
+          AI ACTIVE
+        </div>
+        <div class="topbar-time" id="dash-clock"></div>
+      </div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="ds-content">
+
+      <!-- Last exam result banner (only if exists) -->
+      {% if last_result and last_result[1] and last_result[1] > 0 %}
+      {% set pct = ((last_result[0] / last_result[1]) * 100) | int %}
+      <div class="result-hero">
+        {% if pct >= 60 %}
+        <div class="result-circle" style="border-color:#10b981;">
+          <span class="result-pct" style="color:#10b981;">{{ pct }}%</span>
+          <span class="result-lbl" style="color:#10b981;">Score</span>
+        </div>
+        {% elif pct >= 40 %}
+        <div class="result-circle" style="border-color:#f59e0b;">
+          <span class="result-pct" style="color:#f59e0b;">{{ pct }}%</span>
+          <span class="result-lbl" style="color:#f59e0b;">Score</span>
+        </div>
+        {% else %}
+        <div class="result-circle" style="border-color:#ef4444;">
+          <span class="result-pct" style="color:#ef4444;">{{ pct }}%</span>
+          <span class="result-lbl" style="color:#ef4444;">Score</span>
+        </div>
+        {% endif %}
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(148,179,220,0.35);margin-bottom:6px;">Last Exam Result</div>
+          <div class="result-detail-title">{{ last_result[0] }} / {{ last_result[1] }} correct</div>
+          <div class="result-detail-sub">Submitted: {{ last_result[2] if last_result[2] else 'Recently' }}</div>
+        </div>
+        <a href="/my-reports" style="font-size:14px;font-weight:700;color:#60a5fa;text-decoration:none;flex-shrink:0;">View Full Report →</a>
+      </div>
+      {% endif %}
+
+      <!-- ══ AVAILABLE EXAMS ══ -->
+      <div class="section-heading">
+        <div class="section-title">Available Exams</div>
+        {% if exams %}
+        <div class="section-badge">{{ exams|length }} assigned</div>
+        {% endif %}
+      </div>
+
+      {% if exams and exams|length > 0 %}
+      <div class="exam-cards">
+        {% for exam in exams %}
+        {% set eid  = exam['id']               if exam is mapping else exam[0] %}
+        {% set etit = exam['title']             if exam is mapping else exam[1] %}
+        {% set esub = exam['subject']           if exam is mapping else (exam[2] if exam|length > 2 else 'General') %}
+        {% set edur = exam['duration']          if exam is mapping else (exam[4] if exam|length > 4 else '60') %}
+        {% set emrk = exam['total_marks']       if exam is mapping else (exam[3] if exam|length > 3 else '—') %}
+        {% set ecreator = exam['created_by_name'] if exam is mapping and exam['created_by_name'] else (exam['created_by_email'] if exam is mapping and exam['created_by_email'] else '') %}
+        {% set estatus  = exam['timing_status'] if exam is mapping else 'open' %}
+        {% set elabel   = exam['timing_label']  if exam is mapping else '' %}
+        <div class="exam-card" style="animation-delay:{{ loop.index0 * 0.06 }}s;{% if estatus == 'closed' %}opacity:0.55;{% endif %}">
+          <div class="exam-icon">{% if estatus == 'closed' %}🔒{% elif estatus == 'upcoming' %}⏳{% else %}📋{% endif %}</div>
+          <div class="exam-info">
+            <div class="exam-title" style="display:flex;align-items:center;gap:10px;">
+              {{ etit }}
+              {% if estatus == 'closed' %}
+                <span style="font-size:10px;font-weight:800;letter-spacing:1px;background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);padding:2px 8px;border-radius:20px;text-transform:uppercase;">CLOSED</span>
+              {% elif estatus == 'upcoming' %}
+                <span style="font-size:10px;font-weight:800;letter-spacing:1px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:2px 8px;border-radius:20px;text-transform:uppercase;">UPCOMING</span>
+              {% else %}
+                <span style="font-size:10px;font-weight:800;letter-spacing:1px;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 8px;border-radius:20px;text-transform:uppercase;">OPEN</span>
+              {% endif %}
+            </div>
+            <div class="exam-meta">
+              <div class="exam-meta-chip">📚 Subject: <span>{{ esub }}</span></div>
+              <div class="exam-meta-chip">⏱ Duration: <span>{{ edur }} min</span></div>
+              <div class="exam-meta-chip">🎯 Marks: <span>{{ emrk }}</span></div>
+              {% if ecreator %}<div class="exam-meta-chip">👤 By: <span style="color:#818cf8;">{{ ecreator }}</span></div>{% endif %}
+              {% if elabel %}<div class="exam-meta-chip" style="color:{% if estatus == 'closed' %}#ef4444{% else %}#f59e0b{% endif %};">🕐 <span>{{ elabel }}</span></div>{% endif %}
+            </div>
+          </div>
+          {% if estatus == 'closed' %}
+            <button class="start-btn" disabled
+              style="opacity:0.35;cursor:not-allowed;background:rgba(100,100,120,0.4);box-shadow:none;border:none;">
+              🔒 Closed
+            </button>
+          {% elif estatus == 'upcoming' %}
+            <button class="start-btn" disabled
+              style="opacity:0.5;cursor:not-allowed;background:rgba(245,158,11,0.2);box-shadow:none;color:#f59e0b;border:none;">
+              ⏳ Not Yet Open
+            </button>
+          {% else %}
+            <a href="/instructions?exam_id={{ eid }}" class="start-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Start Exam
+            </a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <div class="empty-exams">
+        <span class="empty-exams-icon">📭</span>
+        <div class="empty-exams-title">No Exams Assigned Yet</div>
+        <div class="empty-exams-sub">Your proctor will publish exams here. Check back soon.</div>
+      </div>
+      {% endif %}
+
+      <!-- ══ PAST RESULTS ══ -->
+      {% if exam_results is defined and exam_results and exam_results|length > 0 %}
+      <div class="section-heading">
+        <div class="section-title">Past Results</div>
+        <a href="/my-reports" style="font-size:14px;font-weight:700;color:#60a5fa;text-decoration:none;">View All →</a>
+      </div>
+      <div class="gs" style="margin-bottom:28px;">
+        {% for r in exam_results[:5] %}
+        {% set rpct = ((r[0] / r[1]) * 100) | int if r[1] > 0 else 0 %}
+        <div class="past-row">
+          <div>
+            <div class="past-row-title">Exam #{{ loop.index }}</div>
+            <div class="past-row-date">{{ r[2] if r[2] else 'Date unknown' }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="font-size:14px;color:rgba(148,179,220,0.5);">{{ r[0] }}/{{ r[1] }}</div>
+            <div class="past-score"
+              style="color: {% if rpct >= 60 %} #10b981 {% elif rpct >= 40 %}#f59e0b{% else %}#ef4444{% endif %}">
+              {{ rpct }}%
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- ══ VIOLATIONS TIMELINE ══ -->
+      {% if violations is defined and violations and violations|length > 0 %}
+      <div class="section-heading">
+        <div class="section-title">Flagged Events</div>
+        <div class="section-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2);">{{ vc }} total</div>
+      </div>
+      <div class="gs">
+        <div class="viol-timeline">
+          {% for v in violations[:6] %}
+          {% set reason = v[0] if v is not mapping else v.reason %}
+          {% set ts     = v[1] if v is not mapping else v.timestamp %}
+          {% set is_c = 'Phone' in reason or 'Multiple' in reason or 'Unauthorized' in reason or 'Terminate' in reason or 'Identity' in reason %}
+          {% set is_h = 'Tab' in reason or 'Fullscreen' in reason or 'Camera' in reason %}
+          <div class="viol-tl-item">
+            <div class="vl-indicator">
+              <div class="vl-dot"
+                style="background:{% if is_c %}#ef4444{% elif is_h %}#f59e0b{% else %}#3b82f6{% endif %};
+                       box-shadow:0 0 6px {% if is_c %}rgba(239,68,68,0.5){% elif is_h %}rgba(245,158,11,0.5){% else %}rgba(59,130,246,0.5){% endif %};">
+              </div>
+              <div class="vl-line"></div>
+            </div>
+            <div class="vl-content">
+              <div class="vl-reason">{{ reason }}</div>
+              <div class="vl-time">{{ ts }}</div>
+            </div>
+            <div class="vl-badge {% if is_c %}vl-crit{% elif is_h %}vl-high{% else %}vl-low{% endif %}">
+              {% if is_c %}Critical{% elif is_h %}High{% else %}Low{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if violations|length > 6 %}
+        <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.04);">
+          <a href="/my-reports" style="font-size:14px;font-weight:700;color:#60a5fa;text-decoration:none;">
+            View all {{ violations|length }} flagged events →
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Footer -->
+      <div style="text-align:center;padding:16px 0;font-size:12px;color:rgba(148,179,220,0.18);font-weight:600;">
+        © 2026 SecureExam AI · Academic Integrity Platform
+      </div>
+
+    </div><!-- ds-content -->
+  </div><!-- ds-main -->
+</div><!-- ds-root -->
+
+<script>
+// Live clock
+function updateClock(){
+    const el = document.getElementById('dash-clock');
+    if(el) el.innerText = new Date().toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+{% endblock %}

@@ -1,0 +1,767 @@
+{% extends "base.html" %}
+{% block title %}Pre-Exam Briefing | {{ project_name }}{% endblock %}
+
+{% block content %}
+<style>
+.global-nav { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════════════════════════
+   ROOT
+══════════════════════════════════════════════════ */
+.instr-root {
+    width: 100%; min-height: 100vh;
+    font-family: var(--font-body, 'Outfit', sans-serif);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 52px 24px 80px;
+    position: relative; z-index: 2;
+}
+
+/* ══════════════════════════════════════════════════
+   TWO-COLUMN LAYOUT
+══════════════════════════════════════════════════ */
+.instr-wrap {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 28px;
+    max-width: 1120px; width: 100%;
+    align-items: start;
+}
+
+/* ══════════════════════════════════════════════════
+   LEFT — MAIN CONTENT
+══════════════════════════════════════════════════ */
+
+/* Eyebrow line */
+.eyebrow {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; font-weight: 800;
+    letter-spacing: 3.5px; text-transform: uppercase;
+    color: var(--accent-light, #60a5fa);
+    margin-bottom: 20px;
+}
+.eyebrow::before {
+    content: '';
+    width: 28px; height: 2px;
+    background: var(--accent-light, #60a5fa);
+    border-radius: 2px;
+}
+
+/* Main title */
+.instr-title {
+    font-family: var(--font-display, 'Fraunces', serif);
+    font-size: clamp(36px, 4.5vw, 56px);
+    font-weight: 900;
+    line-height: 1.02; letter-spacing: -2px;
+    color: var(--ink, #f0f7ff);
+    margin-bottom: 28px;
+}
+.instr-title .hl {
+    color: var(--accent, #60a5fa);
+    font-style: italic;
+}
+
+/* ── Exam info banner ── */
+.exam-info-card {
+    background: var(--surface, rgba(8,20,50,0.6));
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border, rgba(59,130,246,0.2));
+    border-radius: 18px;
+    padding: 22px 28px;
+    margin-bottom: 36px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative; overflow: hidden;
+}
+.exam-info-card::before {
+    content: '';
+    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-light, rgba(96,165,250,0.6)), transparent);
+}
+.exam-info-item {
+    padding: 4px 20px 4px 0;
+    border-right: 1px solid var(--border, rgba(255,255,255,0.08));
+    margin-right: 20px;
+}
+.exam-info-item:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+.exam-info-label {
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-faint, rgba(148,179,220,0.45));
+    margin-bottom: 6px;
+}
+.exam-info-val {
+    font-size: 18px; font-weight: 800;
+    color: var(--ink, #f0f7ff);
+    line-height: 1.2;
+}
+
+/* ── Section heading ── */
+.sub-heading {
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--ink-faint, rgba(148,179,220,0.4));
+    margin-bottom: 16px; margin-top: 36px;
+    display: flex; align-items: center; gap: 12px;
+}
+.sub-heading::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: var(--border, rgba(255,255,255,0.06));
+}
+
+/* ── Protocol grid ── */
+.protocol-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 10px;
+}
+.protocol-card {
+    display: flex; gap: 16px;
+    padding: 20px 18px;
+    background: var(--surface-2, rgba(255,255,255,0.03));
+    border: 1px solid var(--border, rgba(255,255,255,0.07));
+    border-radius: 14px;
+    transition: all 0.25s;
+    position: relative; overflow: hidden;
+}
+.protocol-card::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent, #3b82f6), transparent);
+    opacity: 0; transition: opacity 0.25s;
+}
+.protocol-card:hover {
+    background: var(--bg-hover, rgba(255,255,255,0.06));
+    border-color: var(--accent-border, rgba(59,130,246,0.28));
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+}
+.protocol-card:hover::before { opacity: 1; }
+.p-icon {
+    font-size: 26px; margin-top: 1px; flex-shrink: 0;
+    width: 48px; height: 48px;
+    background: var(--accent-faint, rgba(59,130,246,0.08));
+    border: 1px solid var(--accent-border, rgba(59,130,246,0.18));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+}
+.p-body { flex: 1; min-width: 0; }
+.p-title {
+    font-size: 15px; font-weight: 800;
+    color: var(--ink, #c7dff5);
+    margin-bottom: 6px; line-height: 1.3;
+}
+.p-desc {
+    font-size: 13px;
+    color: var(--ink-mute, rgba(148,179,220,0.55));
+    line-height: 1.65; margin: 0;
+}
+
+/* ── Violation guide ── */
+.viol-guide {
+    background: var(--surface, rgba(8,20,50,0.5));
+    border: 1px solid var(--border, rgba(255,255,255,0.07));
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.viol-guide-header {
+    padding: 16px 22px;
+    background: var(--surface-2, rgba(255,255,255,0.02));
+    border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--accent-light, #60a5fa);
+}
+.viol-row {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border-2, rgba(255,255,255,0.04));
+    transition: background 0.2s;
+}
+.viol-row:last-child { border-bottom: none; }
+.viol-row:hover { background: var(--surface-2, rgba(255,255,255,0.02)); }
+.sev-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 4px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: 900;
+    letter-spacing: 0.5px; flex-shrink: 0; margin-top: 1px;
+    min-width: 90px; justify-content: center;
+}
+.sev-badge .sev-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.sev-badge.critical { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.25); }
+.sev-badge.critical .sev-dot { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.6); }
+.sev-badge.high     { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
+.sev-badge.high     .sev-dot { background: #f59e0b; }
+.sev-badge.medium   { background: rgba(59,130,246,0.12);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.sev-badge.medium   .sev-dot { background: #60a5fa; }
+.sev-badge.low      { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+.sev-badge.low      .sev-dot { background: #10b981; }
+.viol-text {
+    font-size: 14px;
+    color: var(--ink-2, rgba(148,179,220,0.7));
+    line-height: 1.65; padding-top: 2px;
+}
+
+/* ── Checklist ── */
+.checklist { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.check-item {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 20px;
+    background: var(--surface-2, rgba(255,255,255,0.02));
+    border: 1px solid var(--border, rgba(255,255,255,0.06));
+    border-radius: 12px;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.check-item::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--accent, #3b82f6);
+    opacity: 0; transition: opacity 0.2s;
+}
+.check-item:hover { background: var(--bg-hover, rgba(255,255,255,0.04)); border-color: var(--accent-border, rgba(59,130,246,0.22)); }
+.check-item.checked { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.04); }
+.check-item.checked::before { opacity: 1; background: #10b981; }
+.check-input { display: none; }
+.check-box-ui {
+    width: 22px; height: 22px;
+    border: 2px solid var(--border-strong, rgba(255,255,255,0.2));
+    border-radius: 7px; flex-shrink: 0; margin-top: 1px;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: white; font-weight: 900;
+}
+.check-item.checked .check-box-ui {
+    background: #10b981; border-color: #10b981;
+    box-shadow: 0 0 10px rgba(16,185,129,0.3);
+}
+.check-item.checked .check-box-ui::after { content: '✓'; }
+.check-label-text {
+    font-size: 15px;
+    color: var(--ink-2, rgba(148,179,220,0.7));
+    line-height: 1.65;
+    transition: color 0.2s;
+}
+.check-item.checked .check-label-text {
+    color: var(--ink-faint, rgba(148,179,220,0.38));
+    text-decoration: line-through;
+    text-decoration-color: rgba(16,185,129,0.3);
+}
+
+/* ══════════════════════════════════════════════════
+   RIGHT COLUMN — sticky sidebar
+══════════════════════════════════════════════════ */
+.instr-right {
+    display: flex; flex-direction: column; gap: 18px;
+    position: sticky; top: 24px;
+}
+
+/* Glass box */
+.glass-box {
+    background: var(--surface, rgba(8,20,50,0.65));
+    backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+    border: 1px solid var(--border, rgba(255,255,255,0.09));
+    border-radius: 20px;
+    padding: 24px;
+    position: relative; overflow: hidden;
+}
+.glass-box::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-light, rgba(96,165,250,0.55)), transparent);
+}
+
+.gb-title {
+    font-size: 11px; font-weight: 900;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--ink-faint, rgba(148,179,220,0.4));
+    margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+}
+
+/* ── Session token ── */
+.session-token {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--accent-faint, rgba(59,130,246,0.06));
+    border: 1px solid var(--accent-border, rgba(59,130,246,0.18));
+    border-radius: 10px; padding: 12px 16px;
+    margin-bottom: 20px;
+}
+.session-token-icon {
+    font-size: 20px; width: 38px; height: 38px; flex-shrink: 0;
+    background: var(--accent-faint, rgba(59,130,246,0.1));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+}
+.token-label {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-faint, rgba(148,179,220,0.35));
+    margin-bottom: 3px;
+}
+.token-value {
+    font-family: 'JetBrains Mono', 'Outfit', monospace;
+    font-size: 14px; color: var(--accent-light, #60a5fa);
+    font-weight: 700; letter-spacing: 1px;
+}
+
+/* ── System checks ── */
+.sys-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-2, rgba(255,255,255,0.04));
+    font-size: 14px;
+    color: var(--ink-2, rgba(148,179,220,0.65));
+}
+.sys-row:last-of-type { border-bottom: none; }
+.sys-row-label { display: flex; align-items: center; gap: 10px; }
+.sys-row-icon  { font-size: 16px; }
+.sys-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 4px 12px; border-radius: 6px;
+}
+.sys-badge.green   { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+.sys-badge.red     { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.25); }
+.sys-badge.loading { background: rgba(168,85,247,0.1); color: #a855f7; border: 1px solid rgba(168,85,247,0.2); }
+.sys-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+}
+.sys-badge.green .sys-dot   { background: #10b981; animation: pglow 2s infinite; }
+.sys-badge.red .sys-dot     { background: #ef4444; }
+.sys-badge.loading .sys-dot { background: #a855f7; animation: pglow 1s infinite; }
+@keyframes pglow { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ── Detailed progress ── */
+.check-prog { margin-top: 16px; border-top: 1px solid var(--border, rgba(255,255,255,0.05)); padding-top: 14px; }
+.cp-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    color: var(--ink-mute, rgba(148,179,220,0.5));
+    margin-bottom: 10px;
+}
+.cp-item:last-child { margin-bottom: 0; }
+.cp-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid var(--border, rgba(255,255,255,0.15));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; flex-shrink: 0; transition: all 0.3s;
+}
+.cp-icon.ok   { background: rgba(16,185,129,0.15); border-color:#10b981; color:#10b981; }
+.cp-icon.fail { background: rgba(239,68,68,0.15);  border-color:#ef4444; color:#ef4444; }
+.cp-icon.spin { border-color: rgba(59,130,246,0.4); border-top-color: transparent; animation: spin 1s linear infinite; }
+@keyframes spin { to{ transform: rotate(360deg); } }
+
+/* ── Checklist progress chips ── */
+.ready-summary {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 16px;
+}
+.ready-chip {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 10px; border-radius: 8px;
+    font-size: 12px; font-weight: 800;
+    letter-spacing: 0.3px; transition: all 0.25s;
+}
+.ready-chip.done { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+.ready-chip.todo { background: var(--surface-2, rgba(255,255,255,0.03)); color: var(--ink-faint, rgba(148,179,220,0.35)); border: 1px solid var(--border, rgba(255,255,255,0.07)); }
+.chip-progress-note {
+    font-size: 12px;
+    color: var(--ink-faint, rgba(148,179,220,0.35));
+    text-align: center; line-height: 1.5;
+}
+
+/* ── Launch button ── */
+.btn-launch {
+    width: 100%; padding: 17px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6);
+    color: white; border: none; border-radius: 14px;
+    font-family: var(--font-body, 'Outfit', sans-serif);
+    font-size: 16px; font-weight: 800; letter-spacing: 0.4px;
+    cursor: not-allowed; opacity: 0.38;
+    transition: all 0.3s; margin-bottom: 14px;
+    box-shadow: 0 8px 28px rgba(37,99,235,0.3);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    position: relative; overflow: hidden;
+}
+.btn-launch::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+    opacity: 0; transition: opacity 0.22s;
+}
+.btn-launch.ready {
+    opacity: 1; cursor: pointer;
+    animation: readyPulse 2.5s ease infinite;
+}
+@keyframes readyPulse {
+    0%,100% { box-shadow: 0 8px 28px rgba(37,99,235,0.35); }
+    50%     { box-shadow: 0 12px 40px rgba(37,99,235,0.55); }
+}
+.btn-launch.ready:hover { transform: translateY(-3px); box-shadow: 0 20px 48px rgba(37,99,235,0.5); }
+.btn-launch.ready:hover::before { opacity: 1; }
+.btn-launch.ready:active { transform: translateY(0); }
+
+.launch-hint {
+    font-size: 13px;
+    color: var(--ink-faint, rgba(148,179,220,0.38));
+    text-align: center; margin-bottom: 12px; line-height: 1.5;
+}
+.launch-hint.ready { color: #10b981; font-weight: 700; }
+.legal-note {
+    font-size: 11px;
+    color: var(--ink-faint, rgba(148,179,220,0.22));
+    text-align: center; line-height: 1.7;
+}
+
+/* ══════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+══════════════════════════════════════════════════ */
+[data-theme="light"] .instr-title         { color: var(--ink); }
+[data-theme="light"] .exam-info-card      { background: var(--surface); }
+[data-theme="light"] .glass-box           { background: var(--surface); }
+[data-theme="light"] .protocol-card       { background: var(--bg-hover); border-color: var(--border); }
+[data-theme="light"] .protocol-card:hover { background: var(--surface); }
+[data-theme="light"] .viol-guide          { background: var(--surface); }
+[data-theme="light"] .viol-guide-header   { background: var(--bg-hover); }
+[data-theme="light"] .check-item          { background: var(--bg-hover); border-color: var(--border); }
+[data-theme="light"] .check-item:hover    { background: var(--surface); }
+[data-theme="light"] .check-item.checked  { background: rgba(16,185,129,0.05); }
+[data-theme="light"] .p-title             { color: var(--ink); }
+[data-theme="light"] .p-desc              { color: var(--ink-mute); }
+[data-theme="light"] .viol-text           { color: var(--ink-2); }
+[data-theme="light"] .exam-info-val       { color: var(--ink); }
+[data-theme="light"] .token-value         { color: var(--accent); }
+[data-theme="light"] .session-token       { background: var(--accent-faint); border-color: var(--accent-border); }
+[data-theme="light"] .sys-row             { color: var(--ink-2); }
+[data-theme="light"] .cp-item             { color: var(--ink-mute); }
+[data-theme="light"] .check-label-text    { color: var(--ink-2); }
+[data-theme="light"] .check-item.checked .check-label-text { color: var(--ink-faint); }
+[data-theme="light"] .p-icon              { background: var(--accent-faint); border-color: var(--accent-border); }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+    .instr-wrap { grid-template-columns: 1fr; }
+    .instr-right { position: static; }
+    .protocol-grid { grid-template-columns: 1fr; }
+    .exam-info-card { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+    .exam-info-card { grid-template-columns: 1fr; }
+    .exam-info-item { border-right: none; border-bottom: 1px solid var(--border); margin-right: 0; padding-right: 0; padding-bottom: 14px; margin-bottom: 14px; }
+    .exam-info-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .ready-summary { grid-template-columns: 1fr 1fr; }
+}
+
+/* ══════════════════════════════════════════════════
+   ENTRANCE ANIMATIONS
+══════════════════════════════════════════════════ */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.instr-left  { animation: fadeUp 0.5s ease both; }
+.instr-right { animation: fadeUp 0.5s 0.12s ease both; }
+.protocol-card  { animation: fadeUp 0.4s ease both; }
+.protocol-card:nth-child(1) { animation-delay: 0.05s; }
+.protocol-card:nth-child(2) { animation-delay: 0.10s; }
+.protocol-card:nth-child(3) { animation-delay: 0.15s; }
+.protocol-card:nth-child(4) { animation-delay: 0.20s; }
+</style>
+
+
+<div class="instr-root">
+    <div class="instr-wrap">
+
+        <!-- ════════════════ LEFT COLUMN ════════════════ -->
+        <div class="instr-left">
+
+            <div class="eyebrow">Pre-Exam Briefing</div>
+            <h1 class="instr-title">
+                Identity &amp; Environment<br><span class="hl">Check</span>
+            </h1>
+
+            <!-- ── Exam info ── -->
+            {% if exam %}
+            <div class="exam-info-card">
+                <div class="exam-info-item">
+                    <div class="exam-info-label">Exam</div>
+                    <div class="exam-info-val">{{ exam.title }}</div>
+                </div>
+                <div class="exam-info-item">
+                    <div class="exam-info-label">Duration</div>
+                    <div class="exam-info-val">{{ exam.duration }} min</div>
+                </div>
+                <div class="exam-info-item">
+                    <div class="exam-info-label">Total Marks</div>
+                    <div class="exam-info-val">{{ exam.total_marks }}</div>
+                </div>
+                <div class="exam-info-item">
+                    <div class="exam-info-label">Subject</div>
+                    <div class="exam-info-val">{{ exam.subject or '—' }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="exam-info-card" style="grid-template-columns:1fr 1fr;">
+                <div class="exam-info-item">
+                    <div class="exam-info-label">Session Type</div>
+                    <div class="exam-info-val">Proctored Exam</div>
+                </div>
+                <div class="exam-info-item">
+                    <div class="exam-info-label">Status</div>
+                    <div class="exam-info-val" style="color:var(--accent-light,#60a5fa);">Ready to Launch</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ── Monitoring protocols ── -->
+            <div class="sub-heading">Active Monitoring Protocols</div>
+            <div class="protocol-grid">
+                <div class="protocol-card">
+                    <div class="p-icon">👁️</div>
+                    <div class="p-body">
+                        <div class="p-title">AI Surveillance Active</div>
+                        <p class="p-desc">Gaze tracking, head pose estimation, and eye-state analysis run continuously throughout your session.</p>
+                    </div>
+                </div>
+                <div class="protocol-card">
+                    <div class="p-icon">💻</div>
+                    <div class="p-body">
+                        <div class="p-title">Browser Lockdown</div>
+                        <p class="p-desc">Tab switching, copy/paste, and fullscreen exit are flagged immediately as security violations.</p>
+                    </div>
+                </div>
+                <div class="protocol-card">
+                    <div class="p-icon">📵</div>
+                    <div class="p-body">
+                        <div class="p-title">Device Detection</div>
+                        <p class="p-desc">YOLO AI scans for phones, books, and secondary screens. Detected devices trigger escalation.</p>
+                    </div>
+                </div>
+                <div class="protocol-card">
+                    <div class="p-icon">🔐</div>
+                    <div class="p-body">
+                        <div class="p-title">Face Biometrics</div>
+                        <p class="p-desc">Your registered face is matched every few seconds. Impersonation attempts trigger immediate session termination.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Violation severity guide ── -->
+            <div class="sub-heading">Violation Severity Guide</div>
+            <div class="viol-guide">
+                <div class="viol-guide-header">Understanding the Graduated Warning System</div>
+                <div class="viol-row">
+                    <span class="sev-badge critical"><span class="sev-dot"></span>Critical</span>
+                    <span class="viol-text">Phone detected, multiple faces, or impersonation — 1 to 2 warnings then immediate session termination.</span>
+                </div>
+                <div class="viol-row">
+                    <span class="sev-badge high"><span class="sev-dot"></span>High</span>
+                    <span class="viol-text">Tab switch, fullscreen exit, or camera blocked — up to 3 incidents allowed before termination.</span>
+                </div>
+                <div class="viol-row">
+                    <span class="sev-badge medium"><span class="sev-dot"></span>Medium</span>
+                    <span class="viol-text">Head turned significantly or prolonged gaze away from screen — up to 10–12 occurrences permitted.</span>
+                </div>
+                <div class="viol-row">
+                    <span class="sev-badge low"><span class="sev-dot"></span>Low</span>
+                    <span class="viol-text">Brief eye closure or minor movement — warning only, never terminates a session on its own.</span>
+                </div>
+            </div>
+
+            <!-- ── Checklist ── -->
+            <div class="sub-heading">Confirm Before Launching</div>
+            <div class="checklist">
+                <label class="check-item" id="item1">
+                    <input type="checkbox" id="check1" class="check-input" onchange="checkReady()">
+                    <span class="check-box-ui"></span>
+                    <span class="check-label-text">My workspace is clear of phones, books, notes, and all unauthorised materials.</span>
+                </label>
+                <label class="check-item" id="item2">
+                    <input type="checkbox" id="check2" class="check-input" onchange="checkReady()">
+                    <span class="check-box-ui"></span>
+                    <span class="check-label-text">I am the registered student and I will not attempt to impersonate or seek assistance from another person.</span>
+                </label>
+                <label class="check-item" id="item3">
+                    <input type="checkbox" id="check3" class="check-input" onchange="checkReady()">
+                    <span class="check-box-ui"></span>
+                    <span class="check-label-text">I understand that AI monitoring is fully active and my webcam feed is being recorded and analysed in real time.</span>
+                </label>
+                <label class="check-item" id="item4">
+                    <input type="checkbox" id="check4" class="check-input" onchange="checkReady()">
+                    <span class="check-box-ui"></span>
+                    <span class="check-label-text">I accept the graduated violation policy — minor incidents trigger warnings; serious violations will end my session immediately.</span>
+                </label>
+            </div>
+
+        </div><!-- /left -->
+
+        <!-- ════════════════ RIGHT COLUMN ════════════════ -->
+        <div class="instr-right">
+
+            <!-- Session details -->
+            <div class="glass-box">
+                <div class="gb-title">Session Details</div>
+
+                <div class="session-token">
+                    <div class="session-token-icon">🔒</div>
+                    <div>
+                        <div class="token-label">Session ID</div>
+                        <div class="token-value">SEC-{{ session.get('user_id','----') }}-{{ session.get('email','')[:4].upper() }}</div>
+                    </div>
+                </div>
+
+                <div class="sys-row">
+                    <span class="sys-row-label"><span class="sys-row-icon">📷</span>Webcam</span>
+                    <span class="sys-badge loading" id="hw-cam"><span class="sys-dot"></span>Checking</span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-row-label"><span class="sys-row-icon">🌐</span>Network</span>
+                    <span class="sys-badge loading" id="hw-net"><span class="sys-dot"></span>Checking</span>
+                </div>
+                <div class="sys-row">
+                    <span class="sys-row-label"><span class="sys-row-icon">🧬</span>Biometrics</span>
+                    <span class="sys-badge loading" id="hw-face"><span class="sys-dot"></span>Checking</span>
+                </div>
+
+                <div class="check-prog">
+                    <div class="cp-item">
+                        <div class="cp-icon spin" id="cp-cam"></div>
+                        <span id="cp-cam-text">Checking camera access…</span>
+                    </div>
+                    <div class="cp-item">
+                        <div class="cp-icon spin" id="cp-net"></div>
+                        <span id="cp-net-text">Verifying network…</span>
+                    </div>
+                    <div class="cp-item">
+                        <div class="cp-icon spin" id="cp-face"></div>
+                        <span id="cp-face-text">Verifying biometrics…</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checklist progress -->
+            <div class="glass-box">
+                <div class="gb-title">Checklist Progress</div>
+                <div class="ready-summary">
+                    <div class="ready-chip todo" id="chip1">☐ Workspace</div>
+                    <div class="ready-chip todo" id="chip2">☐ Identity</div>
+                    <div class="ready-chip todo" id="chip3">☐ Monitoring</div>
+                    <div class="ready-chip todo" id="chip4">☐ Policy</div>
+                </div>
+                <div class="chip-progress-note">All 4 confirmations required to launch.</div>
+            </div>
+
+            <!-- Launch -->
+            <div class="glass-box">
+                <div class="gb-title">Launch Exam</div>
+                <button id="startBtn" disabled onclick="launchExam()" class="btn-launch">
+                    🚀 Start Proctored Exam
+                </button>
+                <p class="launch-hint" id="launch-hint">Complete the checklist above to enable launch.</p>
+                <p class="legal-note">Protected by SecureProctor AI &nbsp;·&nbsp; Graduated warning system active &nbsp;·&nbsp; End-to-end encrypted</p>
+            </div>
+
+        </div><!-- /right -->
+    </div>
+</div>
+
+<script>
+// ── SYSTEM CHECKS ─────────────────────────────────────────
+function setCheck(cpId, hwId, cpTextId, ok, okText, failText) {
+    const cp  = document.getElementById(cpId);
+    const cpT = document.getElementById(cpTextId);
+    const hw  = document.getElementById(hwId);
+    if (!cp || !cpT || !hw) return;
+
+    cp.className  = 'cp-icon ' + (ok ? 'ok' : 'fail');
+    cp.innerText  = ok ? '✓' : '✗';
+    cpT.innerText = ok ? okText : failText;
+
+    const dotHtml = `<span class="sys-dot" style="background:${ok ? '#10b981' : '#ef4444'};animation:pglow 2s infinite;"></span>`;
+    hw.className  = 'sys-badge ' + (ok ? 'green' : 'red');
+    hw.innerHTML  = dotHtml + (ok ? 'Ready' : 'Error');
+}
+
+// Camera
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        stream.getTracks().forEach(t => t.stop());
+        setCheck('cp-cam', 'hw-cam', 'cp-cam-text', true, '✓ Camera ready', '');
+    })
+    .catch(() => setCheck('cp-cam', 'hw-cam', 'cp-cam-text', false, '', '✗ Camera access denied'));
+
+// Network
+fetch('/')
+    .then(() => setCheck('cp-net', 'hw-net', 'cp-net-text', true, '✓ Network secure', ''))
+    .catch(() => setCheck('cp-net', 'hw-net', 'cp-net-text', false, '', '✗ Network issue detected'));
+
+// Biometrics
+fetch('/check-face-status')
+    .then(r => r.json())
+    .then(d => setCheck('cp-face', 'hw-face', 'cp-face-text', d.registered, '✓ Biometrics verified', '✗ Face not registered'))
+    .catch(() => setCheck('cp-face', 'hw-face', 'cp-face-text', true, '✓ Biometrics on file', ''));
+
+
+// ── CHECKLIST LOGIC ───────────────────────────────────────
+const chipLabels = ['☑ Workspace', '☑ Identity', '☑ Monitoring', '☑ Policy'];
+const chipTodos  = ['☐ Workspace', '☐ Identity', '☐ Monitoring', '☐ Policy'];
+
+function checkReady() {
+    const ids = ['check1', 'check2', 'check3', 'check4'];
+    const allDone = ids.every(id => document.getElementById(id).checked);
+
+    ids.forEach((id, i) => {
+        const checked = document.getElementById(id).checked;
+        const chip    = document.getElementById('chip' + (i + 1));
+        const item    = document.getElementById('item' + (i + 1));
+
+        chip.className   = 'ready-chip ' + (checked ? 'done' : 'todo');
+        chip.textContent = checked ? chipLabels[i] : chipTodos[i];
+
+        if (item) item.classList.toggle('checked', checked);
+    });
+
+    const btn  = document.getElementById('startBtn');
+    const hint = document.getElementById('launch-hint');
+
+    btn.disabled = !allDone;
+    if (allDone) {
+        btn.classList.add('ready');
+        hint.textContent = '✓ All checks passed — you\'re cleared to launch!';
+        hint.className   = 'launch-hint ready';
+    } else {
+        btn.classList.remove('ready');
+        hint.textContent = 'Complete the checklist above to enable launch.';
+        hint.className   = 'launch-hint';
+    }
+}
+
+
+// ── LAUNCH ────────────────────────────────────────────────
+function launchExam() {
+    const btn = document.getElementById('startBtn');
+    btn.disabled  = true;
+    btn.innerHTML = '⏳ Launching secure session…';
+
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const examId = params.get('exam_id') || '';
+
+    setTimeout(() => {
+        window.location.href = examId ? '/exam?exam_id=' + examId : '/exam';
+    }, 600);
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+opencv-python
+numpy
+pandas
+flask
+torch
+torchvision
+deepface
+retina-face
+scikit-learn 

@@ -1,0 +1,110 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    font-family: "Inter", system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #020617);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+}
+
+.auth-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-card {
+    width: 420px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 36px 34px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.auth-card h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.auth-card p.subtitle {
+    margin: 8px 0 28px;
+    font-size: 14px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.auth-form .g-recaptcha {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.auth-form button {
+    margin-top: 6px;
+    padding: 13px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.auth-form button:hover {
+    background: #1e40af;
+}
+
+.auth-links {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.auth-links a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+#start-btn.btn-primary {
+    background: var(--btn-grad, linear-gradient(135deg, #1d4ed8, #2563eb)) !important;
+    color: white !important;
+    padding: 14px 28px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
+}

@@ -1,0 +1,35 @@
+# Virtual Environment
+venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+src/templates/.env
+
+# Database
+*.sqlite3
+*.db
+
+# Face images
+dataset/
+src/dataset/
+
+# Cheating evidence
+cheating_evidence/
+
+# Temporary face images
+src/static/temp_faces/
+temp_faces/
+
+# Temporary images
+temp.jpg
+temp_verify.jpg
+
+# VS Code
+.vscode/
+
+# Logs
+*.log

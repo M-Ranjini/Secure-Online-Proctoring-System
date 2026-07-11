@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+{% block title %}SecureExam AI | AI-Powered Proctored Assessment Platform{% endblock %}
+ 
+{% block content %}
+<style>
+/* ══════════════════════════════════════════════════════
+   HOME PAGE — PROFESSIONAL LANDING
+══════════════════════════════════════════════════════ */
+.global-nav { display: none !important; }
+ 
+.home-root {
+    width: 100%; min-height: 100vh;
+    font-family: 'Outfit', sans-serif;
+    color: #f0f7ff;
+    overflow-x: hidden;
+}
+ 
+/* ── NAV ── */
+.home-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(4,13,26,0.85); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(59,130,246,0.1);
+    transition: all 0.3s;
+}
+.nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.nav-logo {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+}
+.nav-name { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 900; color: #f0f7ff; }
+.nav-links { display: flex; align-items: center; gap: 8px; }
+.nav-link {
+    padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    color: rgba(148,179,220,0.65); text-decoration: none; transition: all 0.2s;
+}
+.nav-link:hover { color: #f0f7ff; background: rgba(59,130,246,0.08); }
+.nav-btn {
+    padding: 9px 22px; border-radius: 8px; font-size: 14px; font-weight: 700;
+    text-decoration: none; transition: all 0.2s;
+}
+.nav-btn-outline {
+    color: #60a5fa; border: 1px solid rgba(59,130,246,0.35);
+    background: rgba(59,130,246,0.06);
+}
+.nav-btn-outline:hover { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.5); }
+.nav-btn-solid {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    color: white; box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+.nav-btn-solid:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(37,99,235,0.45); }
+ 
+/* ── HERO ── */
+.hero-section {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 120px 24px 80px;
+    position: relative;
+}
+ 
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 18px;
+    background: rgba(37,99,235,0.12); border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 100px; font-size: 12px; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase; color: #93c5fd;
+    margin-bottom: 32px; animation: fadeUp 0.8s 0.1s ease both;
+}
+.badge-dot {
+    width: 7px; height: 7px; background: #22d3ee; border-radius: 50%;
+    box-shadow: 0 0 10px #22d3ee; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+ 
+.hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(48px, 7vw, 88px); font-weight: 900;
+    line-height: 0.95; letter-spacing: -4px; color: #f0f7ff;
+    margin-bottom: 28px; animation: fadeUp 0.8s 0.15s ease both;
+}
+.hero-title .grad {
+    font-style: italic;
+    background: linear-gradient(135deg, #60a5fa 0%, #22d3ee 50%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+ 
+.hero-desc {
+    font-size: clamp(16px, 2vw, 19px); font-weight: 400;
+    color: rgba(148,179,220,0.6); line-height: 1.8;
+    max-width: 580px; margin: 0 auto 52px;
+    animation: fadeUp 0.8s 0.2s ease both;
+}
+ 
+/* CTA buttons */
+.cta-group {
+    display: flex; align-items: center; gap: 14px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 72px;
+    animation: fadeUp 0.8s 0.25s ease both;
+}
+.cta-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 36px; border-radius: 12px;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    color: white; font-size: 16px; font-weight: 800;
+    text-decoration: none; letter-spacing: 0.3px;
+    box-shadow: 0 8px 28px rgba(37,99,235,0.45);
+    transition: all 0.3s;
+}
+.cta-primary:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(37,99,235,0.55); }
+ 
+.cta-secondary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 32px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: rgba(148,179,220,0.8); font-size: 16px; font-weight: 700;
+    text-decoration: none; transition: all 0.3s;
+}
+.cta-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #f0f7ff; }
+ 
+/* Hero stats row */
+.hero-stats {
+    display: flex; align-items: center; gap: 0;
+    border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden;
+    animation: fadeUp 0.8s 0.3s ease both; width: fit-content; margin: 0 auto;
+}
+.h-stat {
+    padding: 18px 36px;
+    border-right: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.02); text-align: center;
+}
+.h-stat:last-child { border-right: none; }
+.h-stat-num {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 900;
+    color: #f0f7ff; line-height: 1;
+}
+.h-stat-num sup { font-size: 16px; vertical-align: super; }
+.h-stat-lbl { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(148,179,220,0.3); margin-top: 5px; }
+ 
+@keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+ 
+/* ── FEATURES ── */
+.section { padding: 100px 48px; }
+.section-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+    color: #60a5fa; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+}
+.section-label::before { content:''; width: 24px; height: 1px; background: #60a5fa; }
+ 
+.section-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 4vw, 52px); font-weight: 900;
+    line-height: 1.05; letter-spacing: -2px; color: #f0f7ff;
+    margin-bottom: 16px;
+}
+.section-desc { font-size: 16px; color: rgba(148,179,220,0.55); line-height: 1.8; max-width: 540px; margin-bottom: 56px; }
+ 
+/* Feature grid */
+.feat-grid-6 {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+.feat-card-big {
+    background: rgba(8,20,50,0.55); backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 32px;
+    transition: all 0.3s; position: relative; overflow: hidden;
+}
+.feat-card-big::before {
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(96,165,250,0.4), transparent);
+}
+.feat-card-big:hover {
+    transform: translateY(-4px); border-color: rgba(59,130,246,0.25);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+.feat-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(37,99,235,0.15); border: 1px solid rgba(59,130,246,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin-bottom: 20px;
+}
+.feat-name { font-size: 17px; font-weight: 800; color: #e2e8f0; margin-bottom: 10px; }
+.feat-body { font-size: 14px; color: rgba(148,179,220,0.5); line-height: 1.7; }
+ 
+/* ── HOW IT WORKS ── */
+.hiw-section { padding: 100px 48px; background: rgba(4,10,28,0.5); }
+.hiw-steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; position: relative; margin-top: 56px; }
+.hiw-steps::before {
+    content: ''; position: absolute; top: 36px; left: 12%; right: 12%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), rgba(59,130,246,0.3), transparent);
+}
+.hiw-step { text-align: center; padding: 0 20px; }
+.step-num {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(8,20,50,0.8); border: 1px solid rgba(59,130,246,0.25);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px; position: relative; z-index: 1;
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 900; color: #60a5fa;
+    box-shadow: 0 0 0 6px rgba(4,13,26,1);
+}
+.step-title { font-size: 16px; font-weight: 800; color: #e2e8f0; margin-bottom: 10px; }
+.step-body { font-size: 13px; color: rgba(148,179,220,0.5); line-height: 1.7; }
+ 
+/* ── ROLE CARDS ── */
+.role-section { padding: 80px 48px 100px; text-align: center; }
+.role-cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 720px; margin: 56px auto 0; }
+.role-card-big {
+    background: rgba(8,20,50,0.6); backdrop-filter: blur(28px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px 32px;
+    text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 18px;
+    text-align: center; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative; overflow: hidden;
+}
+.role-card-big::before {
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(96,165,250,0.5), transparent);
+}
+.role-card-big:hover { transform: translateY(-8px) scale(1.02); }
+.role-card-big.student:hover { border-color: rgba(59,130,246,0.4); box-shadow: 0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.2); }
+.role-card-big.admin:hover { border-color: rgba(168,85,247,0.4); box-shadow: 0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(168,85,247,0.2); }
+.role-icon-big {
+    width: 70px; height: 70px; border-radius: 18px; font-size: 30px;
+    display: flex; align-items: center; justify-content: center; transition: transform 0.3s;
+}
+.role-card-big:hover .role-icon-big { transform: scale(1.1) rotate(-4deg); }
+.student .role-icon-big { background: linear-gradient(135deg, rgba(37,99,235,0.3), rgba(59,130,246,0.2)); border: 1px solid rgba(59,130,246,0.3); }
+.admin .role-icon-big { background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(168,85,247,0.2)); border: 1px solid rgba(168,85,247,0.3); }
+.role-name-big { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 900; color: #f0f7ff; letter-spacing: -0.5px; }
+.role-desc-big { font-size: 14px; color: rgba(148,179,220,0.5); line-height: 1.7; }
+.role-enter-btn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
+    transition: all 0.3s;
+}
+.student .role-enter-btn { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.admin .role-enter-btn { background: rgba(168,85,247,0.12); color: #a855f7; border: 1px solid rgba(168,85,247,0.25); }
+.role-card-big:hover .role-enter-btn { background: rgba(59,130,246,0.2); }
+.admin:hover .role-enter-btn { background: rgba(168,85,247,0.2); }
+ 
+/* ── FOOTER ── */
+.home-footer {
+    padding: 40px 48px; border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+}
+.footer-brand { display: flex; align-items: center; gap: 10px; }
+.footer-copy { font-size: 13px; color: rgba(148,179,220,0.3); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 13px; color: rgba(148,179,220,0.3); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: rgba(148,179,220,0.7); }
+ 
+/* Floating particles canvas */
+.particles-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+ 
+@media (max-width: 900px) {
+    .feat-grid-6 { grid-template-columns: 1fr 1fr; }
+    .hiw-steps { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .hiw-steps::before { display: none; }
+    .role-cards-row { grid-template-columns: 1fr; }
+    .home-nav { padding: 14px 20px; }
+    .section { padding: 60px 20px; }
+}
+@media (max-width: 600px) {
+    .feat-grid-6 { grid-template-columns: 1fr; }
+    .hero-stats { flex-direction: column; width: 100%; }
+    .h-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .h-stat:last-child { border-bottom: none; }
+    .nav-links .nav-link { display: none; }
+    .cta-group { flex-direction: column; }
+}
+</style>
+ 
+<!-- Particle canvas -->
+<canvas class="particles-canvas" id="particles"></canvas>
+ 
+<div class="home-root">
+ 
+    <!-- ══ NAV ══ -->
+    <nav class="home-nav">
+        <a href="/" class="nav-brand">
+            <div class="nav-logo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <span class="nav-name">SecureExam AI</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#how-it-works" class="nav-link">How it works</a>
+            <a href="/login" class="nav-btn nav-btn-outline" style="margin-left:8px;">Student Login</a>
+            <a href="/admin/login" class="nav-btn nav-btn-solid">Admin Console</a>
+        </div>
+    </nav>
+ 
+    <!-- ══ HERO ══ -->
+    <section class="hero-section" style="position:relative;z-index:2;">
+ 
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            AI-Powered Academic Integrity Platform
+        </div>
+ 
+        <h1 class="hero-title">
+            Secure Exams.<br>
+            <span class="grad">Zero Compromise.</span>
+        </h1>
+ 
+        <p class="hero-desc">
+            Real-time deepfake detection, biometric face verification, gaze tracking, and YOLO-powered device scanning — built from the ground up for academic integrity.
+        </p>
+ 
+        <div class="cta-group">
+            <a href="/login" class="cta-primary">
+                🎓 Student Portal
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+            <a href="/admin/login" class="cta-secondary">
+                🛡️ Admin Console →
+            </a>
+        </div>
+ 
+        <div class="hero-stats">
+            <div class="h-stat">
+                <div class="h-stat-num">99<sup>%</sup></div>
+                <div class="h-stat-lbl">Detection Accuracy</div>
+            </div>
+            <div class="h-stat">
+                <div class="h-stat-num">0.3<sup>s</sup></div>
+                <div class="h-stat-lbl">AI Response Time</div>
+            </div>
+            <div class="h-stat">
+                <div class="h-stat-num">7<sup>+</sup></div>
+                <div class="h-stat-lbl">AI Models Active</div>
+            </div>
+            <div class="h-stat">
+                <div class="h-stat-num">24<sup>/7</sup></div>
+                <div class="h-stat-lbl">Uptime</div>
+            </div>
+        </div>
+    </section>
+ 
+    <!-- ══ FEATURES ══ -->
+    <section class="section" id="features" style="position:relative;z-index:2;">
+        <div class="section-label">Platform Capabilities</div>
+        <h2 class="section-title">Everything you need<br>for trusted exams.</h2>
+        <p class="section-desc">A complete AI proctoring stack — from biometric registration through live monitoring to evidence-backed violation reports.</p>
+ 
+        <div class="feat-grid-6">
+            <div class="feat-card-big">
+                <div class="feat-icon">👁️</div>
+                <div class="feat-name">Iris Gaze Tracking</div>
+                <div class="feat-body">MediaPipe Face Mesh tracks 468 landmarks including iris positions to detect when students look off-screen in real time.</div>
+            </div>
+            <div class="feat-card-big">
+                <div class="feat-icon">🎭</div>
+                <div class="feat-name">Deepfake Detection</div>
+                <div class="feat-body">DeepFace-powered liveness analysis distinguishes real webcam feeds from synthetic or pre-recorded video substitutions.</div>
+            </div>
+            <div class="feat-card-big">
+                <div class="feat-icon">📵</div>
+                <div class="feat-name">YOLO Device Scanning</div>
+                <div class="feat-body">YOLOv8 and COCO-SSD models continuously scan for phones, books, and unauthorised devices in the student's environment.</div>
+            </div>
+            <div class="feat-card-big">
+                <div class="feat-icon">🔐</div>
+                <div class="feat-name">Face Biometrics</div>
+                <div class="feat-body">Face encoding registered at signup is matched every few seconds during the exam. Impersonation triggers an immediate escalation.</div>
+            </div>
+            <div class="feat-card-big">
+                <div class="feat-icon">⚖️</div>
+                <div class="feat-name">Graduated Warning System</div>
+                <div class="feat-body">Minor violations get warnings. Only repeated serious incidents terminate a session — preventing unfair dismissals from accidental movement.</div>
+            </div>
+            <div class="feat-card-big">
+                <div class="feat-icon">📊</div>
+                <div class="feat-name">Admin Analytics</div>
+                <div class="feat-body">Score distributions, violation timelines, evidence screenshots, and per-student audit logs available instantly in the admin console.</div>
+            </div>
+        </div>
+    </section>
+ 
+    <!-- ══ HOW IT WORKS ══ -->
+    <section class="hiw-section" id="how-it-works" style="position:relative;z-index:2;">
+        <div class="section-label">Process</div>
+        <h2 class="section-title">How it works.</h2>
+        <p class="section-desc">Four steps from registration to result — with AI active at every stage.</p>
+ 
+        <div class="hiw-steps">
+            <div class="hiw-step">
+                <div class="step-num">1</div>
+                <div class="step-title">Register & Enrol</div>
+                <div class="step-body">Students sign up and complete face biometric registration. Their facial encoding is securely stored for identity verification.</div>
+            </div>
+            <div class="hiw-step">
+                <div class="step-num">2</div>
+                <div class="step-title">Pre-Exam Check</div>
+                <div class="step-body">Camera, network, and biometric readiness are verified. Students review the compliance checklist before launching.</div>
+            </div>
+            <div class="hiw-step">
+                <div class="step-num">3</div>
+                <div class="step-title">Live Proctored Exam</div>
+                <div class="step-body">AI monitors gaze, face identity, device presence, and behaviour throughout. Violations are logged with timestamped screenshots.</div>
+            </div>
+            <div class="hiw-step">
+                <div class="step-num">4</div>
+                <div class="step-title">Results & Report</div>
+                <div class="step-body">Scores are published instantly. Admins receive a full violation timeline. Students see their result and any flagged incidents.</div>
+            </div>
+        </div>
+    </section>
+ 
+    <!-- ══ ROLE SELECTOR ══ -->
+    <section class="role-section" style="position:relative;z-index:2;">
+        <div class="section-label" style="justify-content:center;">Get Started</div>
+        <h2 class="section-title">Choose your portal.</h2>
+        <p class="section-desc" style="margin:0 auto 0;">Access the platform as a student taking a proctored exam, or as an admin managing the entire examination system.</p>
+ 
+        <div class="role-cards-row">
+            <a href="/login" class="role-card-big student">
+                <div class="role-icon-big">🎓</div>
+                <div class="role-name-big">Student Portal</div>
+                <div class="role-desc-big">Take AI-proctored exams with biometric verification and real-time monitoring. Register your face and begin.</div>
+                <div class="role-enter-btn">
+                    Enter Student Portal
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </div>
+            </a>
+            <a href="/admin/login" class="role-card-big admin">
+                <div class="role-icon-big">🛡️</div>
+                <div class="role-name-big">Admin Console</div>
+                <div class="role-desc-big">Create exams, monitor sessions live, review evidence, and manage students — protected by two-factor authentication.</div>
+                <div class="role-enter-btn">
+                    Enter Admin Console
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </div>
+            </a>
+        </div>
+    </section>
+ 
+    <!-- ══ FOOTER ══ -->
+    <footer class="home-footer" style="position:relative;z-index:2;">
+        <div class="footer-brand">
+            <div class="nav-logo" style="width:30px;height:30px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <span class="footer-copy">© 2026 SecureExam AI · Academic Integrity Platform</span>
+        </div>
+        <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
+            <a href="mailto:support@secureexam.ai">Support</a>
+        </div>
+        <span class="footer-copy">End-to-end encrypted · All sessions recorded</span>
+    </footer>
+ 
+</div>
+ 
+<script>
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+});
+ 
+// Particle network
+const canvas = document.getElementById('particles');
+const ctx    = canvas.getContext('2d');
+let W, H, nodes = [], mouse = { x: -9999, y: -9999 };
+ 
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+ 
+for (let i = 0; i < 60; i++) {
+    nodes.push({ x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, vx: (Math.random()-.5)*.35, vy: (Math.random()-.5)*.35, r: Math.random()*1.4+0.4 });
+}
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+ 
+function draw() {
+    ctx.clearRect(0,0,W,H);
+    nodes.forEach(n => {
+        n.x += n.vx; n.y += n.vy;
+        if(n.x<0||n.x>W) n.vx*=-1;
+        if(n.y<0||n.y>H) n.vy*=-1;
+        const dx=n.x-mouse.x, dy=n.y-mouse.y, d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){n.x+=dx*.018;n.y+=dy*.018;}
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(59,130,246,0.38)'; ctx.fill();
+    });
+    for(let i=0;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+            const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y, d=Math.sqrt(dx*dx+dy*dy);
+            if(d<140){
+                ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y);
+                ctx.strokeStyle=`rgba(59,130,246,${0.13*(1-d/140)})`; ctx.lineWidth=0.5; ctx.stroke();
+            }
+        }
+    }
+    requestAnimationFrame(draw);
+}
+draw();
+ 
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+    const nav = document.querySelector('.home-nav');
+    if(window.scrollY > 60) { nav.style.background='rgba(4,13,26,0.97)'; }
+    else { nav.style.background='rgba(4,13,26,0.85)'; }
+});
+</script>
+ 
+{% endblock %}

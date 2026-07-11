@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="catchy-container" style="max-width: 1200px; padding: 40px;">
+    <div class="dashboard-header" style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 class="main-title" style="font-size: 2.5rem;">Admin Command Center</h1>
+            <p class="muted-color">Manage assessments and monitor integrity protocols.</p>
+        </div>
+        <div class="admin-actions">
+            <a href="{{ url_for('exam_mgmt.create_exam') }}" class="launch-btn" style="text-decoration: none;">+ Create New Exam</a>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+        <div class="glass-card" style="padding: 20px; text-align: center;">
+            <h4 class="muted-color">Total Exams</h4>
+            <h2 style="color: var(--primary);">{{ exams|length }}</h2>
+        </div>
+        <div class="glass-card" style="padding: 20px; text-align: center;">
+            <h4 class="muted-color">Active Proctors</h4>
+            <h2 style="color: #10b981;">Online</h2>
+        </div>
+        <div class="glass-card" style="padding: 20px; text-align: center;">
+            <h4 class="muted-color">Security Status</h4>
+            <h2 style="color: #f59e0b;">Shield Active</h2>
+        </div>
+    </div>
+
+    <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <div class="accent-bar"></div>
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.05); color: var(--primary);">
+                    <th style="padding: 20px;">Exam Title</th>
+                    <th style="padding: 20px;">Exam Code</th>
+                    <th style="padding: 20px;">Duration</th>
+                    <th style="padding: 20px;">Bulk QP Upload</th>
+                    <th style="padding: 20px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <td style="padding: 20px;">
+                        <strong>{{ exam.title }}</strong>
+                    </td>
+                    <td style="padding: 20px;"><code style="color: #a5b4fc;">{{ exam.exam_code }}</code></td>
+                    <td style="padding: 20px;">{{ exam.duration_minutes }} Mins</td>
+                    <td style="padding: 20px;">
+                        <form action="{{ url_for('exam_mgmt.bulk_upload', exam_id=exam.id) }}" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center;">
+                            <input type="file" name="file" accept=".csv" required style="font-size: 0.8rem; max-width: 150px;">
+                            <button type="submit" class="launch-btn" style="padding: 5px 12px; font-size: 0.7rem; opacity: 0.9;">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </form>
+                    </td>
+                    <td style="padding: 20px;">
+                        <a href="#" class="secondary-link" style="color: #f87171;">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not exams %}
+                <tr>
+                    <td colspan="5" style="padding: 40px; text-align: center;" class="muted-color">
+                        No assessments deployed yet. Click "Create New Exam" to begin.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
